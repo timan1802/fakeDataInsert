@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.template
+package com.github.timan1802.fakedatainsert
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

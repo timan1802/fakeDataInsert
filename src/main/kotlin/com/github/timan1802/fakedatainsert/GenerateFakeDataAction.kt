@@ -1,7 +1,10 @@
 package com.github.timan1802.fakedatainsert
 
 import com.intellij.database.psi.DbTable
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.DumbAware
 
 class GenerateFakeDataAction : AnAction(), DumbAware {
@@ -21,7 +24,7 @@ class GenerateFakeDataAction : AnAction(), DumbAware {
     override fun actionPerformed(e: AnActionEvent) {
         val psiElement = e.getData(CommonDataKeys.PSI_ELEMENT)
         if (psiElement is DbTable) {
-            val dialog = DataFakerDialog()
+            val dialog = DataFakerDialog(psiElement)  // ✅ DbTable 인자 전달
             dialog.show()
         }
     }

@@ -5,6 +5,7 @@
     <vendor>timan1802</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="database.xml">com.intellij.database</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 

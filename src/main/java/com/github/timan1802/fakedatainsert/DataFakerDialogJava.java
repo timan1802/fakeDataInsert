@@ -147,6 +147,8 @@ public class DataFakerDialogJava extends DialogWrapper {
         // 첫 번째 행의 높이를 조절
         table.setRowHeight(0, 25);
 
+        //테이블 가로크기 유동적.
+/*
         // 각 컬럼의 제목이 전부 보이도록 컬럼 폭 자동 조정 + 전체 합산(gap 조금만)
         JTableHeader header = table.getTableHeader();
         TableColumnModel columnModel = table.getColumnModel();
@@ -165,6 +167,12 @@ public class DataFakerDialogJava extends DialogWrapper {
         table.setPreferredScrollableViewportSize(
                 new Dimension(totalWidth, table.getRowHeight() * Math.max(4, table.getRowCount() + 2))
         );
+*/
+
+        //테이블 가로 크기 고정.
+        table.setPreferredScrollableViewportSize(new Dimension(200 * Math.min(columnNames.size(), 10),
+                                                               // 컬럼 수 따라 넓이 증감(가변 처리)
+                                                               25 * 4));
 
         // 예시 데이터 추가 (원하면 제거 가능)
         if (columnNames.size() >= 4) {

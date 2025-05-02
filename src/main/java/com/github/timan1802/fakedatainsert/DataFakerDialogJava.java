@@ -146,15 +146,15 @@ public class DataFakerDialogJava extends DialogWrapper {
         }
 
         JBScrollPane tableScrollPane = new JBScrollPane(table);
+        tableScrollPane.setPreferredSize(new Dimension(-1, 400)); // 테이블 높이 고정
 
         // SQL 텍스트영역 설정 및 배치
         sqlTextArea.setRows(5);
         sqlTextArea.setEditable(false);
         sqlTextArea.setFont(new Font("Monospace", Font.PLAIN, 12));
-        sqlTextArea.setText("adasfadsfasdf");
+        sqlTextArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // 텍스트 여백
+        sqlTextArea.append("Sql Query");
         JScrollPane textScrollPane = new JScrollPane(sqlTextArea);
-
-        mainPanel.add(textScrollPane, BorderLayout.SOUTH);
 
 
         //        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -163,8 +163,8 @@ public class DataFakerDialogJava extends DialogWrapper {
         //        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
 
+        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
         mainPanel.add(textScrollPane, BorderLayout.SOUTH);
 
 

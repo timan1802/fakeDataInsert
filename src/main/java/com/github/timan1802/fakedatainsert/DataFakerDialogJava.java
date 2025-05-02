@@ -1,19 +1,25 @@
 package com.github.timan1802.fakedatainsert;
 
+import com.intellij.database.model.DasNamed;
 import com.intellij.database.model.ObjectKind;
 import com.intellij.database.psi.DbTable;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.ui.table.JBTable;
+import com.intellij.util.ui.JBUI;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableColumn;
 
 public class DataFakerDialogJava extends DialogWrapper {
 
     private final DefaultTableModel tableModel = new DefaultTableModel();
-    private final JTable            table      = new JTable(tableModel);
+    private final JBTable           table      = new JBTable(tableModel);
 
     private final DbTable dbTable;
 
@@ -31,7 +37,7 @@ public class DataFakerDialogJava extends DialogWrapper {
 
         JPanel             topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc      = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = JBUI.insets(5);
         gbc.anchor = GridBagConstraints.WEST;
 
         JLabel     countLabel = new JLabel("생성할 데이터 개수");
@@ -56,8 +62,8 @@ public class DataFakerDialogJava extends DialogWrapper {
         List<String> columnNames = dbTable.getDasChildren(ObjectKind.COLUMN)
                 .toList()
                                           .stream()
-                                          .map(it -> it.getName())
-                                          .collect(Collectors.toList())
+                                          .map(DasNamed::getName)
+                                          .toList()
                 ;
 
         // 사용 가능한 데이터 타입 정의
@@ -141,6 +147,25 @@ public class DataFakerDialogJava extends DialogWrapper {
         // 첫 번째 행의 높이를 조절
         table.setRowHeight(0, 25);
 
+        // 각 컬럼의 제목이 전부 보이도록 컬럼 폭 자동 조정 + 전체 합산(gap 조금만)
+        JTableHeader header = table.getTableHeader();
+        TableColumnModel columnModel = table.getColumnModel();
+
+        java.awt.FontMetrics fm = header.getFontMetrics(header.getFont());
+        int totalWidth = 0;
+        for (int col = 0; col < columnModel.getColumnCount(); col++) {
+            TableColumn column = columnModel.getColumn(col);
+            String columnName = String.valueOf(column.getHeaderValue());
+            int headerWidth = fm.stringWidth(columnName) + 20; // 최소 패딩
+            column.setPreferredWidth(headerWidth);
+            totalWidth += headerWidth;
+        }
+
+        // 테이블 스크롤 패널 및 preferredViewPortSize도 딱 맞도록
+        table.setPreferredScrollableViewportSize(
+                new Dimension(totalWidth, table.getRowHeight() * Math.max(4, table.getRowCount() + 2))
+        );
+
         // 예시 데이터 추가 (원하면 제거 가능)
         if (columnNames.size() >= 4) {
             customTableModel.addRow(new Object[]{"Alfreds Futterkiste", "Maria Anders", "Berlin", "030-0074321"});
@@ -148,9 +173,6 @@ public class DataFakerDialogJava extends DialogWrapper {
                                                  "(5) 555-3932"});
         }
 
-        table.setPreferredScrollableViewportSize(new Dimension(120 * Math.min(columnNames.size(), 5),
-                                                               // 컬럼 수 따라 넓이 증감(가변 처리)
-                                                               25 * 4));
         JScrollPane tableScrollPane = new JScrollPane(table);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));

@@ -3,28 +3,32 @@ package com.github.timan1802.fakedatainsert;
 import com.intellij.database.model.DasNamed;
 import com.intellij.database.model.ObjectKind;
 import com.intellij.database.psi.DbTable;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
-import com.intellij.openapi.ui.ComboBox;
-import com.github.timan1802.fakedatainsert.FakerDataLocaleType;
+import net.datafaker.Faker;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.List;
-import java.util.stream.Collectors;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableColumn;
-import com.intellij.ui.components.JBScrollPane;
+import java.util.Locale;
 
 public class DataFakerDialogJava extends DialogWrapper {
-
+    private Faker faker;
+//    private JTable table;
+    private JComboBox<FakerDataLocaleType> countryComboBox;
+    
     private final DefaultTableModel tableModel = new DefaultTableModel();
     private final JBTable           table      = new JBTable(tableModel);
 
     private final DbTable dbTable;
+//    Faker faker = new Faker(Locale.getDefault());
 
     public DataFakerDialogJava(DbTable dbTable) {
         super(true);
@@ -49,6 +53,20 @@ public class DataFakerDialogJava extends DialogWrapper {
         JLabel            countryLabel    = new JLabel("국가");
 //        ComboBox<String> countryComboBox = new ComboBox<>(new String[]{"KO", "US", "JP", "CN"});
         ComboBox<FakerDataLocaleType> countryComboBox = new ComboBox<>(FakerDataLocaleType.values());
+        
+        // 기본값 설정 (한국어)
+        countryComboBox.setSelectedItem(FakerDataLocaleType.KO_KR);
+        faker = new Faker(new Locale(FakerDataLocaleType.KO_KR.getCode()));
+
+        // 콤보박스 선택 이벤트 처리
+        countryComboBox.addActionListener(e -> {
+            FakerDataLocaleType selectedLocale = (FakerDataLocaleType) countryComboBox.getSelectedItem();
+            if (selectedLocale != null) {
+                updateFaker(selectedLocale);
+            }
+        });
+
+
 
         // 콤보박스에 보이는 값을 좀 더 보기 좋게 하려면 렌더러 추가(선택)
         // (국가 코드+설명 함께 출력)
@@ -63,6 +81,8 @@ public class DataFakerDialogJava extends DialogWrapper {
                 return label;
             }
         });
+
+        System.out.printf("Faker Test: %s\n", faker.name().fullName());
 
 
         gbc.gridx = 0;
@@ -85,9 +105,6 @@ public class DataFakerDialogJava extends DialogWrapper {
                                           .toList()
                 ;
 
-        // 사용 가능한 데이터 타입 정의
-        String[] availableDataTypes = {"이름", "성", "이메일", "전화번호", "주소", "도시", "회사명", "직업", "생년월일", "나이", "신용카드", "숫자",
-                                       "문자열", "날짜", "불리언"};
 
         // TableModel을 수정하여 JComboBox를 제대로 처리하도록 함
         DefaultTableModel customTableModel = new DefaultTableModel() {
@@ -114,76 +131,8 @@ public class DataFakerDialogJava extends DialogWrapper {
             customTableModel.addColumn(columnName);
         }
 
-        // 콤보박스로 첫 번째 행 추가 (ComboBox로)
-        Object[] dataTypeRow = columnNames.stream().map(column -> {
-            ComboBox<String> comboBox = new ComboBox<>(availableDataTypes);
-            comboBox.setSelectedIndex(0);
-            return comboBox;
-        }).toArray();
-        customTableModel.addRow(dataTypeRow);
-
-        // 콤보박스 렌더러와 에디터 설정 (ComboBox 기반)
-        table.getColumnModel().getColumns().asIterator().forEachRemaining(column -> {
-            // 렌더러 설정
-            column.setCellRenderer((table, value, isSelected, hasFocus, row, col) -> {
-                if (value instanceof final ComboBox<?> comboBox) {
-                    if (isSelected) {
-                        comboBox.setBackground(table.getSelectionBackground());
-                        comboBox.setForeground(table.getSelectionForeground());
-                    } else {
-                        comboBox.setBackground(table.getBackground());
-                        comboBox.setForeground(table.getForeground());
-                    }
-                    return comboBox;
-                }
-                return new JLabel(value != null ? value.toString() : "");
-            });
-
-            // 에디터 설정 (ComboBox로 명시)
-            column.setCellEditor(new DefaultCellEditor(new ComboBox<>(availableDataTypes)) {
-                @Override
-                public Component getTableCellEditorComponent(JTable table,
-                                                             Object value,
-                                                             boolean isSelected,
-                                                             int row,
-                                                             int column) {
-                    ComboBox<?> comboBox = (ComboBox<?>) super.getTableCellEditorComponent(table,
-                                                                                          value,
-                                                                                          isSelected,
-                                                                                          row,
-                                                                                          column);
-                    if (value instanceof ComboBox) {
-                        comboBox.setSelectedItem(((ComboBox<?>) value).getSelectedItem());
-                    }
-                    return comboBox;
-                }
-            });
-        });
-
-        // 첫 번째 행의 높이를 조절
-        table.setRowHeight(0, 25);
-
-        //테이블 가로크기 유동적.
-/*
-        // 각 컬럼의 제목이 전부 보이도록 컬럼 폭 자동 조정 + 전체 합산(gap 조금만)
-        JTableHeader header = table.getTableHeader();
-        TableColumnModel columnModel = table.getColumnModel();
-
-        java.awt.FontMetrics fm = header.getFontMetrics(header.getFont());
-        int totalWidth = 0;
-        for (int col = 0; col < columnModel.getColumnCount(); col++) {
-            TableColumn column = columnModel.getColumn(col);
-            String columnName = String.valueOf(column.getHeaderValue());
-            int headerWidth = fm.stringWidth(columnName) + 20; // 최소 패딩
-            column.setPreferredWidth(headerWidth);
-            totalWidth += headerWidth;
-        }
-
-        // 테이블 스크롤 패널 및 preferredViewPortSize도 딱 맞도록
-        table.setPreferredScrollableViewportSize(
-                new Dimension(totalWidth, table.getRowHeight() * Math.max(4, table.getRowCount() + 2))
-        );
-*/
+        //테이블 설정 부분
+        setupTable();
 
         //테이블 가로 크기 고정.
         table.setPreferredScrollableViewportSize(new Dimension(200 * Math.min(columnNames.size(), 10),
@@ -208,5 +157,196 @@ public class DataFakerDialogJava extends DialogWrapper {
         panel.add(buttonPanel, BorderLayout.SOUTH);
 
         return panel;
+    }
+
+    // Faker 업데이트 메서드
+    private void updateFaker(FakerDataLocaleType locale) {
+        try {
+            faker = new Faker(new Locale(locale.getCode()));
+            // 필요한 경우 테이블 데이터 갱신
+            refreshTableData();
+            // 테이블 재설정 (새로운 Faker의 Provider 목록으로 갱신)
+            setupTable();
+        } catch (Exception e) {
+            // 에러 처리
+            Messages.showErrorDialog(
+                "로케일 '" + locale.getCode() + "' 설정 중 오류가 발생했습니다.",
+                "Faker 초기화 오류"
+            );
+        }
+    }
+
+    // 테이블 데이터 갱신 메서드 (필요한 경우 구현)
+    private void refreshTableData() {
+        // 테이블의 데이터를 새로운 Faker 인스턴스를 사용하여 갱신
+        // 예: 미리보기 데이터 등을 갱신
+        System.out.printf("Faker Test: %s\n", faker.name().fullName());
+    }
+
+    private void setupTable() {
+        // ✅ DbTable에서 컬럼명 추출
+        List<String> columnNames = dbTable.getDasChildren(ObjectKind.COLUMN)
+                .toList()
+                .stream()
+                .map(DasNamed::getName)
+                .toList();
+
+        // Faker의 Provider 목록을 가져와서 availableDataTypes로 사용
+        String[] availableDataTypes = FakerUtils.getAllProviderNames(faker)
+                .stream()
+                .sorted()  // 알파벳 순으로 정렬
+                .toArray(String[]::new);
+
+        // TableModel을 수정하여 JComboBox를 제대로 처리하도록 함
+        DefaultTableModel tableModel = new DefaultTableModel();
+
+        // 컬럼명 설정
+        for (String columnName : columnNames) {
+            tableModel.addColumn(columnName);
+        }
+
+        // 먼저 테이블 모델 설정
+        table.setModel(tableModel);
+
+        // 3개의 빈 행 추가 (DataTypePanel용 1행 + 샘플 데이터용 2행)
+        tableModel.addRow(new Object[columnNames.size()]);  // 첫 번째 행
+        tableModel.addRow(new Object[columnNames.size()]);  // 두 번째 행
+        tableModel.addRow(new Object[columnNames.size()]);  // 세 번째 행
+
+        // 첫 번째 행에 DataTypePanel 추가
+        for (int col = 0; col < columnNames.size(); col++) {
+            DataTypePanel panel = new DataTypePanel(availableDataTypes, faker, table, col);
+            table.setValueAt(panel, 0, col);  // 직접 setValueAt 사용
+        }
+
+        // 한 번 클릭으로 편집 모드 시작하도록 설정
+        table.putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
+        
+        // 클릭 동작 수정
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int row = table.rowAtPoint(e.getPoint());
+                int col = table.columnAtPoint(e.getPoint());
+                
+                if (row == 0) {  // 첫 번째 행인 경우에만
+                    table.editCellAt(row, col);
+                    Component editor = table.getEditorComponent();
+                    if (editor instanceof DataTypePanel) {
+                        DataTypePanel panel = (DataTypePanel) editor;
+                        // 클릭된 위치에 따라 적절한 콤보박스 표시
+                        Point p = e.getPoint();
+                        p.y = 0;  // 패널 내 y좌표 조정
+                        Component clicked = panel.getComponentAt(p);
+                        if (clicked instanceof JComboBox) {
+                            ((JComboBox<?>) clicked).showPopup();
+                        }
+                    }
+                }
+            }
+        });
+
+        // 각 컬럼에 대한 렌더러와 에디터 설정
+        for (int col = 0; col < table.getColumnCount(); col++) {
+            TableColumn column = table.getColumnModel().getColumn(col);
+            
+            // 렌더러 설정
+            column.setCellRenderer(new TableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(
+                    JTable table, Object value, boolean isSelected, 
+                    boolean hasFocus, int row, int column
+                ) {
+                    if (row == 0 && value instanceof DataTypePanel panel) {
+                        if (isSelected) {
+                            panel.setBackground(table.getSelectionBackground());
+                            panel.setForeground(table.getSelectionForeground());
+                        } else {
+                            panel.setBackground(table.getBackground());
+                            panel.setForeground(table.getForeground());
+                        }
+                        return panel;
+                    }
+                    // 다른 행들은 기본 렌더링
+                    JLabel label = new JLabel(value != null ? value.toString() : "");
+                    if (isSelected) {
+                        label.setBackground(table.getSelectionBackground());
+                        label.setForeground(table.getSelectionForeground());
+                        label.setOpaque(true);
+                    }
+                    return label;
+                }
+            });
+
+            // 에디터 설정
+            column.setCellEditor(new DefaultCellEditor(new JTextField()) {
+                private DataTypePanel panel;
+
+                @Override
+                public Component getTableCellEditorComponent(
+                        JTable table, Object value, boolean isSelected, int row, int column) {
+                    if (row == 0) {
+                        if (value instanceof DataTypePanel) {
+                            panel = (DataTypePanel) value;
+                        } else {
+                            // 새 패널 생성이 필요한 경우
+                            panel = new DataTypePanel(availableDataTypes, faker, table, column);
+                        }
+                        if (isSelected) {
+                            panel.setBackground(table.getSelectionBackground());
+                            panel.setForeground(table.getSelectionForeground());
+                        }
+                        return panel;
+                    }
+                    // 다른 행들
+                    return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+                }
+
+                @Override
+                public Object getCellEditorValue() {
+                    return panel;
+                }
+
+                @Override
+                public boolean stopCellEditing() {
+                    fireEditingStopped();
+                    return super.stopCellEditing();
+                }
+            });
+
+            // 컬럼 너비 설정
+            column.setPreferredWidth(200);  // 두 콤보박스가 들어갈 수 있는 충분한 너비
+        }
+    }
+
+    private void createUIComponents() {
+        // 국가 콤보박스 초기화
+        countryComboBox = new JComboBox<>(FakerDataLocaleType.values());
+        countryComboBox.setSelectedItem(FakerDataLocaleType.KO_KR); // 기본값 설정
+        
+        // locale 변경 이벤트 처리
+        countryComboBox.addActionListener(e -> updateFakerLocale());
+        
+        // 초기 Faker 인스턴스 생성
+        updateFakerLocale();
+    }
+
+    private void updateFakerLocale() {
+        FakerDataLocaleType selectedLocale = (FakerDataLocaleType) countryComboBox.getSelectedItem();
+        if (selectedLocale != null) {
+            // 새로운 Faker 인스턴스 생성
+            faker = new Faker(new Locale(selectedLocale.getCode()));
+            
+            // 테이블이 있고 모델이 있는 경우에만 업데이트
+            if (table != null && table.getModel() != null) {
+                // 모든 DataTypePanel에 새로운 Faker 인스턴스 전달
+                for (int col = 0; col < table.getColumnCount(); col++) {
+                    Object value = table.getValueAt(0, col);
+                    if (value instanceof DataTypePanel) {
+                        ((DataTypePanel) value).updateFaker(faker);
+                    }
+                }
+            }
+        }
     }
 }

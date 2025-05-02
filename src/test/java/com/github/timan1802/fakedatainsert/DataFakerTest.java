@@ -1,14 +1,14 @@
-import com.intellij.testFramework.UsefulTestCase;
+package com.github.timan1802.fakedatainsert;
+
+import junit.framework.TestCase;
 import net.datafaker.Faker;
 import net.datafaker.providers.base.Cat;
 import net.datafaker.providers.base.Options;
-import net.datafaker.service.FakerContext;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.lang.reflect.Method;
+import java.util.*;
 
-public class DataFakerTest extends UsefulTestCase {
+public class DataFakerTest extends TestCase {
 
     public void testFaker() {
         Faker faker = new Faker(new Locale("ko"));
@@ -33,6 +33,24 @@ public class DataFakerTest extends UsefulTestCase {
         final Options opt = faker.options();
         opt.option(Day.class);
 
+        Set<String> providerMethods = new TreeSet<>();
+
+        for (Method method : faker.getClass().getMethods()) {
+            if (method.getParameterCount() == 0) {
+                Class<?> returnType = method.getReturnType();
+                if (returnType.getPackageName().startsWith("net.datafaker.providers")) {
+                    providerMethods.add(method.getName());
+                }
+            }
+        }
+
+        System.out.println("Available DataFaker Providers:");
+        providerMethods.forEach(System.out::println);
+
+
+
 
     }
+
+
 }

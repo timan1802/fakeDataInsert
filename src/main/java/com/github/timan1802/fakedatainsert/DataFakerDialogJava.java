@@ -23,9 +23,7 @@ public class DataFakerDialogJava extends DialogWrapper {
     private final JBTable           table      = new JBTable(tableModel);
     private final DbTable dbTable;
     private Faker                          faker;
-    //    private JTable table;
     private JComboBox<FakerDataLocaleType> countryComboBox;
-    //    Faker faker = new Faker(Locale.getDefault());
 
     public DataFakerDialogJava(DbTable dbTable) {
         super(true);
@@ -37,7 +35,7 @@ public class DataFakerDialogJava extends DialogWrapper {
 
     @Override
     protected JComponent createCenterPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel mainPanel = new JPanel(new BorderLayout());
 
         JPanel             topPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc      = new GridBagConstraints();
@@ -150,11 +148,11 @@ public class DataFakerDialogJava extends DialogWrapper {
         buttonPanel.add(new JButton("Insert"));
         buttonPanel.add(new JButton("Cancel"));
 
-        panel.add(topPanel, BorderLayout.NORTH);
-        panel.add(tableScrollPane, BorderLayout.CENTER);
-        panel.add(buttonPanel, BorderLayout.SOUTH);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        return panel;
+        return mainPanel;
     }
 
     // Faker 업데이트 메서드

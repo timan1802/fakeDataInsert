@@ -17,7 +17,7 @@ public class FakerUtils {
 
         for (Method method : faker.getClass().getMethods()) {
             if (method.getParameterCount() == 0 &&
-                method.getReturnType().getPackageName().startsWith("net.datafaker.providers")) {
+                method.getReturnType().getPackageName().startsWith("net.datafaker.providers.base")) {
                 providerNames.add(method.getName());
             }
         }
@@ -34,8 +34,10 @@ public class FakerUtils {
             Method providerMethod = faker.getClass().getMethod(providerName);
             Object provider = providerMethod.invoke(faker);
 
-            for (Method method : provider.getClass().getDeclaredMethods()) {
-                if (!method.isSynthetic() && !method.getName().equals("<init>")) {
+            for (Method method : provider.getClass().getMethods()) {
+                if (!method.isSynthetic() &&
+                    !method.getName().equals("<init>") &&
+                    method.getDeclaringClass().getPackageName().startsWith("net.datafaker.providers.base")) {
                     methodNames.add(method.getName());
                 }
             }

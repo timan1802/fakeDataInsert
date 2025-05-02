@@ -46,6 +46,9 @@ dependencies {
 
         testFramework(TestFrameworkType.Platform)
     }
+
+    // Datafaker
+    implementation("net.datafaker:datafaker:2.4.3")
 }
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html

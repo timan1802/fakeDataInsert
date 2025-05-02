@@ -6,6 +6,7 @@ import com.intellij.database.psi.DbTable;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
+import com.intellij.openapi.ui.ComboBox;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableColumn;
+import com.intellij.ui.components.JBScrollPane;
 
 public class DataFakerDialogJava extends DialogWrapper {
 
@@ -95,21 +97,20 @@ public class DataFakerDialogJava extends DialogWrapper {
             customTableModel.addColumn(columnName);
         }
 
-        // 콤보박스로 첫 번째 행 추가
+        // 콤보박스로 첫 번째 행 추가 (ComboBox로)
         Object[] dataTypeRow = columnNames.stream().map(column -> {
-            JComboBox<String> comboBox = new JComboBox<>(availableDataTypes);
+            ComboBox<String> comboBox = new ComboBox<>(availableDataTypes);
             comboBox.setSelectedIndex(0);
             return comboBox;
-        }).toArray()
-                ;
+        }).toArray();
         customTableModel.addRow(dataTypeRow);
 
-        // 콤보박스 렌더러와 에디터 설정
+        // 콤보박스 렌더러와 에디터 설정 (ComboBox 기반)
         table.getColumnModel().getColumns().asIterator().forEachRemaining(column -> {
             // 렌더러 설정
             column.setCellRenderer((table, value, isSelected, hasFocus, row, col) -> {
-                if (value instanceof JComboBox) {
-                    JComboBox<?> comboBox = (JComboBox<?>) value;
+                if (value instanceof ComboBox) {
+                    ComboBox<?> comboBox = (ComboBox<?>) value;
                     if (isSelected) {
                         comboBox.setBackground(table.getSelectionBackground());
                         comboBox.setForeground(table.getSelectionForeground());
@@ -122,27 +123,26 @@ public class DataFakerDialogJava extends DialogWrapper {
                 return new JLabel(value != null ? value.toString() : "");
             });
 
-            // 에디터 설정
-            column.setCellEditor(new DefaultCellEditor(new JComboBox<>(availableDataTypes)) {
+            // 에디터 설정 (ComboBox로 명시)
+            column.setCellEditor(new DefaultCellEditor(new ComboBox<>(availableDataTypes)) {
                 @Override
                 public Component getTableCellEditorComponent(JTable table,
                                                              Object value,
                                                              boolean isSelected,
                                                              int row,
                                                              int column) {
-                    JComboBox<?> comboBox = (JComboBox<?>) super.getTableCellEditorComponent(table,
-                                                                                             value,
-                                                                                             isSelected,
-                                                                                             row,
-                                                                                             column);
-                    if (value instanceof JComboBox) {
-                        comboBox.setSelectedItem(((JComboBox<?>) value).getSelectedItem());
+                    ComboBox<?> comboBox = (ComboBox<?>) super.getTableCellEditorComponent(table,
+                                                                                          value,
+                                                                                          isSelected,
+                                                                                          row,
+                                                                                          column);
+                    if (value instanceof ComboBox) {
+                        comboBox.setSelectedItem(((ComboBox<?>) value).getSelectedItem());
                     }
                     return comboBox;
                 }
             });
-        })
-        ;
+        });
 
         // 첫 번째 행의 높이를 조절
         table.setRowHeight(0, 25);
@@ -181,7 +181,7 @@ public class DataFakerDialogJava extends DialogWrapper {
                                                  "(5) 555-3932"});
         }
 
-        JScrollPane tableScrollPane = new JScrollPane(table);
+        JBScrollPane tableScrollPane = new JBScrollPane(table);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(new JButton("Insert"));

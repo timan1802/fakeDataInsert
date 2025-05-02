@@ -135,7 +135,10 @@ class DataFakerDialog(private val dbTable: DbTable) : DialogWrapper(true) {
             tableModel.addRow(arrayOf("Antonio Moreno Taquería", "Antonio Moreno", "México D.F.", "(5) 555-3932"))
         }
 
-        table.preferredScrollableViewportSize = Dimension(500, 120)
+        table.preferredScrollableViewportSize = Dimension(
+            120 * columnNames.size.coerceAtMost(5), // 컬럼 수 따라 넓이 증감(가변 처리)
+            25 * 4
+        )
         val tableScrollPane = JScrollPane(table)
 
         val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT))

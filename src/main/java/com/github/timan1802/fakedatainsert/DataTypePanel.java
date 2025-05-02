@@ -18,23 +18,31 @@ class DataTypePanel extends JPanel {
         this.faker = faker;
         this.table = table;
         this.column = column;
-        setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-
+        
+        // BoxLayout으로 변경하여 컴포넌트들이 세로로 쌓이도록 함
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        
         typeBox = new JComboBox<>(types);
         subTypeBox = new JComboBox<>();
-
+        
         // 기본 크기 설정
-        typeBox.setPreferredSize(new Dimension(150, 30));
-        subTypeBox.setPreferredSize(new Dimension(150, 30));
-
-        // typeBox 선택 이벤트 처리
+        typeBox.setPreferredSize(new Dimension(150, 25));
+        typeBox.setMaximumSize(new Dimension(150, 25));  // BoxLayout에서 중요
+        
+        subTypeBox.setPreferredSize(new Dimension(150, 25));
+        subTypeBox.setMaximumSize(new Dimension(150, 25));  // BoxLayout에서 중요
+        
+        // 이벤트 리스너 추가
         typeBox.addActionListener(e -> updateSubTypeBox());
-
-        // subTypeBox 선택 이벤트 처리
         subTypeBox.addActionListener(e -> updateTableValues());
-
+        
+        // 약간의 여백 추가
+        add(Box.createVerticalStrut(2));  // 상단 여백
         add(typeBox);
+        add(Box.createVerticalStrut(2));  // 콤보박스 사이 여백
         add(subTypeBox);
+        add(Box.createVerticalStrut(2));  // 하단 여백
+        
         setOpaque(true);
 
         if (typeBox.getSelectedItem() != null) {

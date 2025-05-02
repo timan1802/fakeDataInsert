@@ -134,7 +134,8 @@ public class DataFakerDialogJava extends DialogWrapper {
         setupTable();
 
         //테이블 가로 크기 고정. // 컬럼 수 따라 넓이 증감(가변 처리)
-        table.setPreferredScrollableViewportSize(new Dimension(200 * Math.min(columnNames.size(), 10), 25 * 4));
+        table.setPreferredScrollableViewportSize(new Dimension(200 * Math.min(columnNames.size(), 10),
+                                                               500));
 
         // 예시 데이터 추가 (원하면 제거 가능)
         if (columnNames.size() >= 4) {
@@ -201,6 +202,18 @@ public class DataFakerDialogJava extends DialogWrapper {
         tableModel.addRow(new Object[columnNames.size()]);  // 첫 번째 행
         tableModel.addRow(new Object[columnNames.size()]);  // 두 번째 행
         tableModel.addRow(new Object[columnNames.size()]);  // 세 번째 행
+
+        // 테이블 행 높이 설정
+        table.setRowHeight(0, 60);  // 첫 번째 행 높이를 더 크게 설정
+        table.setRowHeight(1, 30);  // 두 번째 행
+        table.setRowHeight(2, 30);  // 세 번째 행
+
+
+        // 테이블 헤더 높이 설정 (선택사항)
+        table.getTableHeader().setPreferredSize(new Dimension(
+            table.getTableHeader().getPreferredSize().width, 
+            30
+        ));
 
         // 첫 번째 행에 DataTypePanel 추가
         for (int col = 0; col < columnNames.size(); col++) {
@@ -325,7 +338,7 @@ public class DataFakerDialogJava extends DialogWrapper {
             faker = new Faker(new Locale(selectedLocale.getCode()));
 
             // 테이블이 있고 모델이 있는 경우에만 업데이트
-            if (table != null && table.getModel() != null) {
+            if (table.getModel() != null) {
                 // 모든 DataTypePanel에 새로운 Faker 인스턴스 전달
                 for (int col = 0; col < table.getColumnCount(); col++) {
                     Object value = table.getValueAt(0, col);

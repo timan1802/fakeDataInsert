@@ -46,7 +46,7 @@ public class DataFakerDialogJava extends DialogWrapper {
         JTextField countField = new JTextField("100", 10);
 
         JLabel            countryLabel    = new JLabel("국가");
-        JComboBox<String> countryComboBox = new JComboBox<>(new String[]{"KO", "US", "JP", "CN"});
+        ComboBox<String> countryComboBox = new ComboBox<>(new String[]{"KO", "US", "JP", "CN"});
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -109,8 +109,7 @@ public class DataFakerDialogJava extends DialogWrapper {
         table.getColumnModel().getColumns().asIterator().forEachRemaining(column -> {
             // 렌더러 설정
             column.setCellRenderer((table, value, isSelected, hasFocus, row, col) -> {
-                if (value instanceof ComboBox) {
-                    ComboBox<?> comboBox = (ComboBox<?>) value;
+                if (value instanceof final ComboBox<?> comboBox) {
                     if (isSelected) {
                         comboBox.setBackground(table.getSelectionBackground());
                         comboBox.setForeground(table.getSelectionForeground());

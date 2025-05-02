@@ -19,15 +19,19 @@ import java.util.List;
 import java.util.Locale;
 
 public class DataFakerDialogJava extends DialogWrapper {
-    private final DefaultTableModel tableModel = new DefaultTableModel();
-    private final JBTable           table      = new JBTable(tableModel);
-    private final DbTable dbTable;
-    private Faker                          faker;
-    private JComboBox<FakerDataLocaleType> countryComboBox;
+    private final DefaultTableModel              tableModel = new DefaultTableModel();
+    private final JBTable                        table      = new JBTable(tableModel);
+    private final DbTable                        dbTable;
+    private final JTextArea                      sqlTextArea;
+    private       Faker                          faker;
+    private       JComboBox<FakerDataLocaleType> countryComboBox;
+
 
     public DataFakerDialogJava(DbTable dbTable) {
         super(true);
         this.dbTable = dbTable;
+        this.sqlTextArea = new JTextArea();
+
 
         init();
         setTitle("Fake Data Insert for " + dbTable.getName());
@@ -132,8 +136,7 @@ public class DataFakerDialogJava extends DialogWrapper {
         setupTable();
 
         //테이블 가로 크기 고정. // 컬럼 수 따라 넓이 증감(가변 처리)
-        table.setPreferredScrollableViewportSize(new Dimension(200 * Math.min(columnNames.size(), 10),
-                                                               500));
+        table.setPreferredScrollableViewportSize(new Dimension(200 * Math.min(columnNames.size(), 10), 500));
 
         // 예시 데이터 추가 (원하면 제거 가능)
         if (columnNames.size() >= 4) {
@@ -144,14 +147,29 @@ public class DataFakerDialogJava extends DialogWrapper {
 
         JBScrollPane tableScrollPane = new JBScrollPane(table);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.add(new JButton("Insert"));
-        buttonPanel.add(new JButton("Cancel"));
+        // SQL 텍스트영역 설정 및 배치
+        sqlTextArea.setRows(5);
+        sqlTextArea.setEditable(false);
+        sqlTextArea.setFont(new Font("Monospace", Font.PLAIN, 12));
+        sqlTextArea.setText("adasfadsfasdf");
+        JScrollPane textScrollPane = new JScrollPane(sqlTextArea);
+
+        mainPanel.add(textScrollPane, BorderLayout.SOUTH);
+
+
+        //        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        //        buttonPanel.add(new JButton("Insert"));
+        //        buttonPanel.add(new JButton("Cancel"));
+        //        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.add(tableScrollPane, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
+        mainPanel.add(textScrollPane, BorderLayout.SOUTH);
+
+
+        // 전체 패널 크기 설정
+        mainPanel.setPreferredSize(new Dimension(800, 600));
         return mainPanel;
     }
 
@@ -208,10 +226,7 @@ public class DataFakerDialogJava extends DialogWrapper {
 
 
         // 테이블 헤더 높이 설정 (선택사항)
-        table.getTableHeader().setPreferredSize(new Dimension(
-            table.getTableHeader().getPreferredSize().width, 
-            30
-        ));
+        table.getTableHeader().setPreferredSize(new Dimension(table.getTableHeader().getPreferredSize().width, 30));
 
         // 첫 번째 행에 DataTypePanel 추가
         for (int col = 0; col < columnNames.size(); col++) {

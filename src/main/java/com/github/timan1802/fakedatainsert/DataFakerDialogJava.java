@@ -7,6 +7,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 import com.intellij.openapi.ui.ComboBox;
+import com.github.timan1802.fakedatainsert.FakerDataLocaleType;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -46,7 +47,23 @@ public class DataFakerDialogJava extends DialogWrapper {
         JTextField countField = new JTextField("100", 10);
 
         JLabel            countryLabel    = new JLabel("국가");
-        ComboBox<String> countryComboBox = new ComboBox<>(new String[]{"KO", "US", "JP", "CN"});
+//        ComboBox<String> countryComboBox = new ComboBox<>(new String[]{"KO", "US", "JP", "CN"});
+        ComboBox<FakerDataLocaleType> countryComboBox = new ComboBox<>(FakerDataLocaleType.values());
+
+        // 콤보박스에 보이는 값을 좀 더 보기 좋게 하려면 렌더러 추가(선택)
+        // (국가 코드+설명 함께 출력)
+        countryComboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof FakerDataLocaleType fakerLocale) {
+                    String desc = fakerLocale.getDescription();
+                    label.setText(fakerLocale.getCode() + (desc != null && !desc.isEmpty() ? " - " + desc : ""));
+                }
+                return label;
+            }
+        });
+
 
         gbc.gridx = 0;
         gbc.gridy = 0;

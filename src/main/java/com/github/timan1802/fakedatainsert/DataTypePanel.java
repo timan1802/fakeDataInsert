@@ -18,21 +18,21 @@ class DataTypePanel extends JPanel {
         this.faker = faker;
         this.table = table;
         this.column = column;
-        setLayout(new FlowLayout(FlowLayout.LEFT, 2, 0));
-        
+        setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+
         typeBox = new JComboBox<>(types);
         subTypeBox = new JComboBox<>();
-        
+
         // 기본 크기 설정
-        typeBox.setPreferredSize(new Dimension(100, 25));
-        subTypeBox.setPreferredSize(new Dimension(80, 25));
-        
+        typeBox.setPreferredSize(new Dimension(150, 30));
+        subTypeBox.setPreferredSize(new Dimension(150, 30));
+
         // typeBox 선택 이벤트 처리
         typeBox.addActionListener(e -> updateSubTypeBox());
-        
+
         // subTypeBox 선택 이벤트 처리
         subTypeBox.addActionListener(e -> updateTableValues());
-        
+
         add(typeBox);
         add(subTypeBox);
         setOpaque(true);
@@ -45,7 +45,7 @@ class DataTypePanel extends JPanel {
     private void updateTableValues() {
         String providerName = getSelectedType();
         String methodName = getSelectedSubType();
-        
+
         if (providerName != null && methodName != null && table != null) {
             // 샘플 값 5개 생성하여 테이블에 설정
             for (int i = 1; i <= 2; i++) {  // 2행과 3행에 대해
@@ -61,18 +61,18 @@ class DataTypePanel extends JPanel {
         if (selectedProvider != null) {
             // 현재 선택된 값 저장
             Object currentSelection = subTypeBox.getSelectedItem();
-            
+
             // 콤보박스 아이템 업데이트
             subTypeBox.removeAllItems();
-            
+
             // 선택된 Provider의 메서드 목록 가져오기
             List<String> methodNames = FakerUtils.getProviderMethodNames(faker, selectedProvider);
-            
+
             // 정렬하여 콤보박스에 추가
             methodNames.stream()
                     .sorted()
                     .forEach(subTypeBox::addItem);
-            
+
             // 이전 선택값이 있고 새 목록에도 있다면 다시 선택
             if (currentSelection != null && methodNames.contains(currentSelection)) {
                 subTypeBox.setSelectedItem(currentSelection);
@@ -101,21 +101,21 @@ class DataTypePanel extends JPanel {
     public void updateFaker(Faker newFaker) {
         this.faker = newFaker;
         // Provider 목록 업데이트가 필요한 경우 여기에 추가
-        
+
         // 현재 선택된 값들 저장
         String currentType = getSelectedType();
         String currentSubType = getSelectedSubType();
-        
+
         // 필요한 경우 콤보박스 업데이트
         if (currentType != null) {
             updateSubTypeBox();
-            
+
             // 이전 선택값 복원
             setSelectedType(currentType);
             if (currentSubType != null) {
                 setSelectedSubType(currentSubType);
             }
-            
+
             // 테이블 값 업데이트
             updateTableValues();
         }

@@ -13,22 +13,19 @@ import net.datafaker.Faker;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.List;
 import java.util.Locale;
 
 public class DataFakerDialogJava extends DialogWrapper {
-    private Faker faker;
-//    private JTable table;
-    private JComboBox<FakerDataLocaleType> countryComboBox;
-    
     private final DefaultTableModel tableModel = new DefaultTableModel();
     private final JBTable           table      = new JBTable(tableModel);
-
     private final DbTable dbTable;
-//    Faker faker = new Faker(Locale.getDefault());
+    private Faker                          faker;
+    //    private JTable table;
+    private JComboBox<FakerDataLocaleType> countryComboBox;
+    //    Faker faker = new Faker(Locale.getDefault());
 
     public DataFakerDialogJava(DbTable dbTable) {
         super(true);
@@ -50,10 +47,10 @@ public class DataFakerDialogJava extends DialogWrapper {
         JLabel     countLabel = new JLabel("생성할 데이터 개수");
         JTextField countField = new JTextField("100", 10);
 
-        JLabel            countryLabel    = new JLabel("국가");
-//        ComboBox<String> countryComboBox = new ComboBox<>(new String[]{"KO", "US", "JP", "CN"});
+        JLabel countryLabel = new JLabel("국가");
+        //        ComboBox<String> countryComboBox = new ComboBox<>(new String[]{"KO", "US", "JP", "CN"});
         ComboBox<FakerDataLocaleType> countryComboBox = new ComboBox<>(FakerDataLocaleType.values());
-        
+
         // 기본값 설정 (한국어)
         countryComboBox.setSelectedItem(FakerDataLocaleType.KO_KR);
         faker = new Faker(new Locale(FakerDataLocaleType.KO_KR.getCode()));
@@ -67,13 +64,20 @@ public class DataFakerDialogJava extends DialogWrapper {
         });
 
 
-
         // 콤보박스에 보이는 값을 좀 더 보기 좋게 하려면 렌더러 추가(선택)
         // (국가 코드+설명 함께 출력)
         countryComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            public Component getListCellRendererComponent(JList<?> list,
+                                                          Object value,
+                                                          int index,
+                                                          boolean isSelected,
+                                                          boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list,
+                                                                           value,
+                                                                           index,
+                                                                           isSelected,
+                                                                           cellHasFocus);
                 if (value instanceof FakerDataLocaleType fakerLocale) {
                     String desc = fakerLocale.getDescription();
                     label.setText(fakerLocale.getCode() + (desc != null && !desc.isEmpty() ? " - " + desc : ""));
@@ -98,12 +102,7 @@ public class DataFakerDialogJava extends DialogWrapper {
         topPanel.add(countryComboBox, gbc);
 
         // ✅ DbTable에서 컬럼명 추출
-        List<String> columnNames = dbTable.getDasChildren(ObjectKind.COLUMN)
-                .toList()
-                                          .stream()
-                                          .map(DasNamed::getName)
-                                          .toList()
-                ;
+        List<String> columnNames = dbTable.getDasChildren(ObjectKind.COLUMN).map(DasNamed::getName).toList();
 
 
         // TableModel을 수정하여 JComboBox를 제대로 처리하도록 함
@@ -134,10 +133,8 @@ public class DataFakerDialogJava extends DialogWrapper {
         //테이블 설정 부분
         setupTable();
 
-        //테이블 가로 크기 고정.
-        table.setPreferredScrollableViewportSize(new Dimension(200 * Math.min(columnNames.size(), 10),
-                                                               // 컬럼 수 따라 넓이 증감(가변 처리)
-                                                               25 * 4));
+        //테이블 가로 크기 고정. // 컬럼 수 따라 넓이 증감(가변 처리)
+        table.setPreferredScrollableViewportSize(new Dimension(200 * Math.min(columnNames.size(), 10), 25 * 4));
 
         // 예시 데이터 추가 (원하면 제거 가능)
         if (columnNames.size() >= 4) {
@@ -169,10 +166,7 @@ public class DataFakerDialogJava extends DialogWrapper {
             setupTable();
         } catch (Exception e) {
             // 에러 처리
-            Messages.showErrorDialog(
-                "로케일 '" + locale.getCode() + "' 설정 중 오류가 발생했습니다.",
-                "Faker 초기화 오류"
-            );
+            Messages.showErrorDialog("로케일 '" + locale.getCode() + "' 설정 중 오류가 발생했습니다.", "Faker 초기화 오류");
         }
     }
 
@@ -185,17 +179,12 @@ public class DataFakerDialogJava extends DialogWrapper {
 
     private void setupTable() {
         // ✅ DbTable에서 컬럼명 추출
-        List<String> columnNames = dbTable.getDasChildren(ObjectKind.COLUMN)
-                .toList()
-                .stream()
-                .map(DasNamed::getName)
-                .toList();
+        List<String> columnNames = dbTable.getDasChildren(ObjectKind.COLUMN).map(DasNamed::getName).toList();
 
         // Faker의 Provider 목록을 가져와서 availableDataTypes로 사용
-        String[] availableDataTypes = FakerUtils.getAllProviderNames(faker)
-                .stream()
-                .sorted()  // 알파벳 순으로 정렬
-                .toArray(String[]::new);
+        String[] availableDataTypes = FakerUtils.getAllProviderNames(faker).stream().sorted()  // 알파벳 순으로 정렬
+                                                .toArray(String[]::new)
+                ;
 
         // TableModel을 수정하여 JComboBox를 제대로 처리하도록 함
         DefaultTableModel tableModel = new DefaultTableModel();
@@ -221,14 +210,14 @@ public class DataFakerDialogJava extends DialogWrapper {
 
         // 한 번 클릭으로 편집 모드 시작하도록 설정
         table.putClientProperty("JTable.autoStartsEdit", Boolean.TRUE);
-        
+
         // 클릭 동작 수정
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 int row = table.rowAtPoint(e.getPoint());
                 int col = table.columnAtPoint(e.getPoint());
-                
+
                 if (row == 0) {  // 첫 번째 행인 경우에만
                     table.editCellAt(row, col);
                     Component editor = table.getEditorComponent();
@@ -249,33 +238,28 @@ public class DataFakerDialogJava extends DialogWrapper {
         // 각 컬럼에 대한 렌더러와 에디터 설정
         for (int col = 0; col < table.getColumnCount(); col++) {
             TableColumn column = table.getColumnModel().getColumn(col);
-            
+
             // 렌더러 설정
-            column.setCellRenderer(new TableCellRenderer() {
-                @Override
-                public Component getTableCellRendererComponent(
-                    JTable table, Object value, boolean isSelected, 
-                    boolean hasFocus, int row, int column
-                ) {
-                    if (row == 0 && value instanceof DataTypePanel panel) {
-                        if (isSelected) {
-                            panel.setBackground(table.getSelectionBackground());
-                            panel.setForeground(table.getSelectionForeground());
-                        } else {
-                            panel.setBackground(table.getBackground());
-                            panel.setForeground(table.getForeground());
-                        }
-                        return panel;
-                    }
-                    // 다른 행들은 기본 렌더링
-                    JLabel label = new JLabel(value != null ? value.toString() : "");
+            column.setCellRenderer((table, value, isSelected, hasFocus, row, column1) -> {
+                if (row == 0 && value instanceof DataTypePanel panel) {
                     if (isSelected) {
-                        label.setBackground(table.getSelectionBackground());
-                        label.setForeground(table.getSelectionForeground());
-                        label.setOpaque(true);
+                        panel.setBackground(table.getSelectionBackground());
+                        panel.setForeground(table.getSelectionForeground());
+                    } else {
+                        panel.setBackground(table.getBackground());
+                        panel.setForeground(table.getForeground());
                     }
-                    return label;
+                    return panel;
                 }
+
+                // 다른 행들은 기본 렌더링
+                JLabel label = new JLabel(value != null ? value.toString() : "");
+                if (isSelected) {
+                    label.setBackground(table.getSelectionBackground());
+                    label.setForeground(table.getSelectionForeground());
+                    label.setOpaque(true);
+                }
+                return label;
             });
 
             // 에디터 설정
@@ -283,8 +267,11 @@ public class DataFakerDialogJava extends DialogWrapper {
                 private DataTypePanel panel;
 
                 @Override
-                public Component getTableCellEditorComponent(
-                        JTable table, Object value, boolean isSelected, int row, int column) {
+                public Component getTableCellEditorComponent(JTable table,
+                                                             Object value,
+                                                             boolean isSelected,
+                                                             int row,
+                                                             int column) {
                     if (row == 0) {
                         if (value instanceof DataTypePanel) {
                             panel = (DataTypePanel) value;
@@ -323,10 +310,10 @@ public class DataFakerDialogJava extends DialogWrapper {
         // 국가 콤보박스 초기화
         countryComboBox = new JComboBox<>(FakerDataLocaleType.values());
         countryComboBox.setSelectedItem(FakerDataLocaleType.KO_KR); // 기본값 설정
-        
+
         // locale 변경 이벤트 처리
         countryComboBox.addActionListener(e -> updateFakerLocale());
-        
+
         // 초기 Faker 인스턴스 생성
         updateFakerLocale();
     }
@@ -336,7 +323,7 @@ public class DataFakerDialogJava extends DialogWrapper {
         if (selectedLocale != null) {
             // 새로운 Faker 인스턴스 생성
             faker = new Faker(new Locale(selectedLocale.getCode()));
-            
+
             // 테이블이 있고 모델이 있는 경우에만 업데이트
             if (table != null && table.getModel() != null) {
                 // 모든 DataTypePanel에 새로운 Faker 인스턴스 전달

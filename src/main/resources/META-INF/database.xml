@@ -5,7 +5,7 @@
 
   <actions>
     <action id="fake-generate-action"
-      class="com.github.timan1802.fakedatainsert.GenerateFakeDataAction"
+      class="com.github.timan1802.fakedatainsert.GenerateFakeDataActionJava"
       text="Generate Fake Data"
       description="Generate fake data using DataFaker">
       <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>

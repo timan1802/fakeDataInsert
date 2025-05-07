@@ -1,5 +1,6 @@
 package com.github.timan1802.fakedatainsert;
 
+import com.intellij.database.Dbms;
 import com.intellij.database.model.DasNamed;
 import com.intellij.database.model.ObjectKind;
 import com.intellij.database.psi.DbTable;
@@ -429,12 +430,24 @@ public class DataFakerDialogJava extends DialogWrapper {
             // 스키마 생성
             Schema<String, String> schema = Schema.of(fields.toArray(new Field[0]));
 
-            // SQL 변환기 생성
+            // DB 종류 확인
+            // DB 종류 확인 및 SqlDialect 설정
+            Dbms dbms = dbTable.getDataSource().getDbms();
+            SqlDialect sqlDialect = DbmsDialectMapper.getSqlDialectOrNull(dbms);
+
+            if (sqlDialect == null) {
+                sqlDialect = SqlDialect.MYSQL; // 기본값
+                Messages.showWarningDialog(
+                        String.format("지원되지 않는 데이터베이스 유형 '%s'입니다. MYSQL 형식으로 생성됩니다.", dbms.getDisplayName()),
+                        "데이터베이스 유형 경고"
+                );
+            }
+
             SqlTransformer<String> transformer =
                     new SqlTransformer.SqlTransformerBuilder<String>()
                             .batch(5)
                             .tableName(dbTable.getName())
-                            .dialect(SqlDialect.POSTGRES)
+                            .dialect(sqlDialect)
                             .build();
 
             // countField의 값을 정수로 변환하여 사용

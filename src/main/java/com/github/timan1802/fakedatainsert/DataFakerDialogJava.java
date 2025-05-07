@@ -101,9 +101,6 @@ public class DataFakerDialogJava extends DialogWrapper {
             }
         });
 
-        System.out.printf("Faker Test: %s\n", faker.name().fullName());
-
-
         gbc.gridx = 0;
         gbc.gridy = 0;
         topPanel.add(countLabel, gbc);
@@ -149,14 +146,14 @@ public class DataFakerDialogJava extends DialogWrapper {
         setupTable();
 
         //테이블 가로 크기 고정. // 컬럼 수 따라 넓이 증감(가변 처리)
-        table.setPreferredScrollableViewportSize(new Dimension(200 * Math.min(columnNames.size(), 10), 500));
+        table.setPreferredScrollableViewportSize(new Dimension(300 * Math.min(columnNames.size(), 10), 500));
 
         // 예시 데이터 추가 (원하면 제거 가능)
-        if (columnNames.size() >= 4) {
-            customTableModel.addRow(new Object[]{"Alfreds Futterkiste", "Maria Anders", "Berlin", "030-0074321"});
-            customTableModel.addRow(new Object[]{"Antonio Moreno Taquería", "Antonio Moreno", "México D.F.",
-                                                 "(5) 555-3932"});
-        }
+//        if (columnNames.size() >= 4) {
+//            customTableModel.addRow(new Object[]{"Alfreds Futterkiste", "Maria Anders", "Berlin", "030-0074321"});
+//            customTableModel.addRow(new Object[]{"Antonio Moreno Taquería", "Antonio Moreno", "México D.F.",
+//                                                 "(5) 555-3932"});
+//        }
 
         JBScrollPane tableScrollPane = new JBScrollPane(table);
         tableScrollPane.setPreferredSize(new Dimension(-1, 400)); // 테이블 높이 고정

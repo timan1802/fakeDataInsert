@@ -170,14 +170,39 @@ public class DataFakerDialogJava extends DialogWrapper {
         //        buttonPanel.add(new JButton("Cancel"));
         //        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
+        // 테이블 부분을 위한 패널
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tableScrollPane = new JBScrollPane(table);
+
+        // 테이블 크기를 고정
+        table.setPreferredScrollableViewportSize(new Dimension(800, 300));
+        tablePanel.add(tableScrollPane);
+
+        // SQL 텍스트 영역을 위한 분할 패널 생성
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setTopComponent(tablePanel);
+
+        // SQL 텍스트 영역 설정
+        sqlTextArea.setRows(5);
+        sqlTextArea.setEditable(false);
+        sqlTextArea.setFont(new Font("Monospace", Font.PLAIN, 12));
+        textScrollPane = new JBScrollPane(sqlTextArea);
+
+        // 분할 패널의 아래쪽에 SQL 텍스트 영역 추가
+        splitPane.setBottomComponent(textScrollPane);
+
+        // 분할 패널의 분할 위치 설정
+        splitPane.setDividerLocation(200);
+
+        // 테이블 부분의 크기 조절 비활성화
+        splitPane.setEnabled(true);
+
         mainPanel.add(topPanel, BorderLayout.NORTH);
-
-        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
-        mainPanel.add(textScrollPane, BorderLayout.SOUTH);
-
+        mainPanel.add(splitPane, BorderLayout.CENTER);
 
         // 전체 패널 크기 설정
         mainPanel.setPreferredSize(new Dimension(800, 600));
+
         return mainPanel;
     }
 

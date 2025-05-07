@@ -23,6 +23,9 @@ public class DataTypePanel extends JPanel {
     private JComboBox<String> typeBox;     // 메인 데이터 타입 선택
     private JComboBox<String> subTypeBox;  // 서브 타입 선택
     private Faker             faker;                         // 데이터 생성기
+    
+    // 상수: 생년월일 기본 메서드 이름
+    private static final String METHOD_CUSTOM_BIRTHDAY = "birthday";
 
     /**
      * DataTypePanel 생성자
@@ -103,16 +106,26 @@ public class DataTypePanel extends JPanel {
     }
 
     /**
-     * 컬럼 타입에 따른 기본값 설정
+     * 컬럼 타입에 따른 Data Faker 콤보박스 기본값 설정
      */
     private void checkAndSetColumnDefaults() {
         String columnName = table.getColumnModel().getColumn(columnIndex).getHeaderValue().toString().toLowerCase();
         DasColumn column = getColumnFromDbTable(columnName);
         
-        if (column != null && columnName.contains("id")) {
-            String dataType = column.getDasType().toString().toLowerCase();
-            if (dataType.contains("int") || dataType.contains("bigint")) {
-                setTypeAndSubType("number", "positive");
+        if (column != null) {
+            String dataType = column.getDasType().toDataType().typeName;
+            
+            // ID 컬럼 처리
+            if (columnName.contains("id")) {
+                if (dataType.contains("int") || dataType.contains("bigint")) {
+                    setTypeAndSubType("number", "positive");
+                }
+            }
+
+            // 날짜/시간 컬럼 처리
+            else if ((columnName.equals("created_at") || columnName.equals("updated_at")) && 
+                     (dataType.contains("timestamp") || dataType.contains("datetime"))) {
+                setTypeAndSubType("date", METHOD_CUSTOM_BIRTHDAY);
             }
         }
     }

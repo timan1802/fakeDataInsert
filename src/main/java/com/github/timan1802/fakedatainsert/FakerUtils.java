@@ -33,6 +33,10 @@ public class FakerUtils {
      */
 public static List<String> getProviderMethodNames(Faker faker, String providerName) {
     try {
+        if("domain".equals(providerName)) {
+            return List.of("fullDomain");
+        }
+
         Method providerMethod = faker.getClass().getMethod(providerName);
         Object provider = providerMethod.invoke(faker);
         
@@ -67,6 +71,10 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
      */
     public static Object invokeProviderMethod(Faker faker, String providerName, String methodName) {
         try {
+            if("fullDomain".equals(methodName)) {
+                return faker.domain().fullDomain("my-domain");
+            }
+
             Method providerMethod = faker.getClass().getMethod(providerName);
             Object provider = providerMethod.invoke(faker);
 

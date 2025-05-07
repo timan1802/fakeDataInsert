@@ -5,7 +5,6 @@ import com.intellij.database.model.DasNamed;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
 import com.intellij.database.psi.DbTable;
-import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBScrollPane;
@@ -28,184 +27,296 @@ import java.util.Locale;
 
 import static net.datafaker.transformations.Field.field;
 
+/**
+ * 가짜 데이터 삽입을 위한 대화상자 클래스입니다.
+ * 데이터베이스 테이블에 대한 테스트 데이터를 생성하고 SQL 문을 만들어내는 기능을 제공합니다.
+ */
 public class DataFakerDialogJava extends DialogWrapper {
-    private final DefaultTableModel              tableModel = new DefaultTableModel();
-    private final JBTable                        table      = new JBTable(tableModel);
-    private final DbTable                        dbTable;
-    private final JTextArea                      sqlTextArea;
-    private       Faker                          faker;
-    private       JComboBox<FakerDataLocaleType> countryComboBox;
-    private JTextField
-            countField; // 추가된 부분
+    // UI 컴포넌트 크기 상수
+    private static final int DEFAULT_ROW_COUNT = 100;  // 기본 생성 행 수
+    private static final int HEADER_HEIGHT = 30;       // 헤더 높이
+    private static final int FIRST_ROW_HEIGHT = 60;    // 첫 번째 행 높이 (데이터 타입 선택 패널용)
+    private static final int DATA_ROW_HEIGHT = 30;     // 데이터 행 높이
+    private static final int DEFAULT_COLUMN_WIDTH = 200; // 기본 컬럼 너비
+    private static final int DIALOG_WIDTH = 800;       // 대화상자 너비
+    private static final int DIALOG_HEIGHT = 600;      // 대화상자 높이
+    private static final int TABLE_HEIGHT = 300;       // 테이블 높이
+    private static final int DIVIDER_LOCATION = 200;   // 분할창 구분자 위치
+    
+    // UI 컴포넌트
+    private final DefaultTableModel tableModel;        // 테이블 데이터 모델
+    private final JBTable table;                       // 데이터 미리보기 테이블
+    private final DbTable dbTable;                     // 대상 데이터베이스 테이블
+    private final JTextArea sqlTextArea;               // SQL 출력 영역
+    private Faker faker;                               // 가짜 데이터 생성기
+    private JComboBox<FakerDataLocaleType> countryComboBox; // 국가/언어 선택 콤보박스
+    private JTextField countField;                     // 생성할 데이터 개수 입력 필드
 
-
-
+    /**
+     * 대화상자 생성자
+     * @param dbTable 대상 데이터베이스 테이블
+     */
     public DataFakerDialogJava(DbTable dbTable) {
-        super(true);
+        super(true); // 모달 대화상자로 생성
         this.dbTable = dbTable;
-        this.sqlTextArea = new JTextArea();
-
+        this.tableModel = new DefaultTableModel();
+        this.table = new JBTable(tableModel);
+        this.sqlTextArea = createSqlTextArea();
 
         init();
         setTitle("Fake Data Insert for " + dbTable.getName());
     }
 
+    /**
+     * 대화상자의 중앙 패널을 생성합니다.
+     * @return 생성된 중앙 패널
+     */
     @Override
     protected JComponent createCenterPanel() {
         JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setPreferredSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
 
-        JPanel             topPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc      = new GridBagConstraints();
+        mainPanel.add(createTopPanel(), BorderLayout.NORTH);
+        mainPanel.add(createSplitPane(), BorderLayout.CENTER);
+
+        return mainPanel;
+    }
+
+    /**
+     * 상단 패널을 생성합니다. 데이터 생성 개수와 국가 선택 컴포넌트를 포함합니다.
+     */
+    private JPanel createTopPanel() {
+        JPanel topPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = createGridBagConstraints();
+
+        addCountComponents(topPanel, gbc);
+        addCountryComponents(topPanel, gbc);
+
+        return topPanel;
+    }
+
+    /**
+     * GridBagConstraints 객체를 생성하고 기본 설정을 적용합니다.
+     */
+    private GridBagConstraints createGridBagConstraints() {
+        GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = JBUI.insets(5);
         gbc.anchor = GridBagConstraints.WEST;
+        return gbc;
+    }
 
-        JLabel     countLabel = new JLabel("생성할 데이터 개수");
-        countField = new JBTextField("100", 10);
-
-        JLabel countryLabel = new JLabel("국가");
-        //        ComboBox<String> countryComboBox = new ComboBox<>(new String[]{"KO", "US", "JP", "CN"});
-        ComboBox<FakerDataLocaleType> countryComboBox = new ComboBox<>(FakerDataLocaleType.values());
-
-        // 기본값 설정 (한국어)
-        countryComboBox.setSelectedItem(FakerDataLocaleType.KO_KR);
-        faker = new Faker(new Locale(FakerDataLocaleType.KO_KR.getCode()));
-
-        // 콤보박스 선택 이벤트 처리
-        countryComboBox.addActionListener(e -> {
-            FakerDataLocaleType selectedLocale = (FakerDataLocaleType) countryComboBox.getSelectedItem();
-            if (selectedLocale != null) {
-                updateFaker(selectedLocale);
-            }
-        });
-
-
-        // 콤보박스에 보이는 값을 좀 더 보기 좋게 하려면 렌더러 추가(선택)
-        // (국가 코드+설명 함께 출력)
-        countryComboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list,
-                                                          Object value,
-                                                          int index,
-                                                          boolean isSelected,
-                                                          boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list,
-                                                                           value,
-                                                                           index,
-                                                                           isSelected,
-                                                                           cellHasFocus);
-                if (value instanceof FakerDataLocaleType fakerLocale) {
-                    String desc = fakerLocale.getDescription();
-                    label.setText(fakerLocale.getCode() + (desc != null && !desc.isEmpty() ? " - " + desc : ""));
-                }
-                return label;
-            }
-        });
+    /**
+     * 데이터 생성 개수 관련 컴포넌트를 추가합니다.
+     */
+    private void addCountComponents(JPanel panel, GridBagConstraints gbc) {
+        JLabel countLabel = new JLabel("생성할 데이터 개수");
+        countField = new JBTextField(String.valueOf(DEFAULT_ROW_COUNT), 10);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        topPanel.add(countLabel, gbc);
+        panel.add(countLabel, gbc);
         gbc.gridx = 1;
-        topPanel.add(countField, gbc);
+        panel.add(countField, gbc);
+    }
+
+    /**
+     * 국가 선택 관련 컴포넌트를 추가합니다.
+     */
+    private void addCountryComponents(JPanel panel, GridBagConstraints gbc) {
+        JLabel countryLabel = new JLabel("국가");
+        countryComboBox = new JComboBox<>(FakerDataLocaleType.values());
+        setupCountryComboBox();
 
         gbc.gridx = 0;
         gbc.gridy = 1;
-        topPanel.add(countryLabel, gbc);
+        panel.add(countryLabel, gbc);
         gbc.gridx = 1;
-        topPanel.add(countryComboBox, gbc);
+        panel.add(countryComboBox, gbc);
+    }
 
-        // ✅ DbTable에서 컬럼명 추출
-        List<String> columnNames = dbTable.getDasChildren(ObjectKind.COLUMN).map(DasNamed::getName).toList();
+    /**
+     * 국가 선택 콤보박스를 초기화하고 설정합니다.
+     */
+    private void setupCountryComboBox() {
+        countryComboBox.setSelectedItem(FakerDataLocaleType.KO_KR);
+        countryComboBox.setRenderer(createCountryComboBoxRenderer());
+        countryComboBox.addActionListener(e -> updateFakerLocale());
+        updateFakerLocale();
+    }
 
+    /**
+     * 국가 선택 콤보박스를 위한 셀 렌더러를 생성합니다.
+     * FakerDataLocaleType enum을 표시하기 위한 커스텀 렌더러입니다.
+     *
+     * @return ListCellRenderer<FakerDataLocaleType> 커스텀된 콤보박스 셀 렌더러
+     */
+    private ListCellRenderer<FakerDataLocaleType> createCountryComboBoxRenderer() {
+        return new ListCellRenderer<FakerDataLocaleType>() {
+            // 기본 렌더링을 위한 DefaultListCellRenderer 인스턴스
+            protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
-        // TableModel을 수정하여 JComboBox를 제대로 처리하도록 함
-        DefaultTableModel customTableModel = new DefaultTableModel() {
+            /**
+             * 콤보박스의 각 항목을 렌더링하는 메서드
+             * 
+             * @param list 렌더링 중인 JList 컴포넌트
+             * @param value 현재 렌더링할 FakerDataLocaleType 값
+             * @param index 현재 항목의 인덱스
+             * @param isSelected 항목이 선택되었는지 여부
+             * @param cellHasFocus 셀에 포커스가 있는지 여부
+             * @return Component 렌더링된 리스트 항목 컴포넌트
+             */
             @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                if (getRowCount() > 0 && getValueAt(0, columnIndex) instanceof JComboBox) {
-                    return JComboBox.class;
-                } else {
-                    return super.getColumnClass(columnIndex);
+            public Component getListCellRendererComponent(JList<? extends FakerDataLocaleType> list,
+                                                        FakerDataLocaleType value,
+                                                        int index,
+                                                        boolean isSelected,
+                                                        boolean cellHasFocus) {
+                // 기본 렌더러를 사용하여 기본 스타일링 적용
+                JLabel label = (JLabel) defaultRenderer.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+                
+                // value가 null이 아닌 경우에만 텍스트 설정
+                if (value != null) {
+                    String desc = value.getDescription();
+                    // 국가 코드와 설명을 함께 표시 (설명이 있는 경우에만)
+                    label.setText(value.getCode() + (desc != null && !desc.isEmpty() ? " - " + desc : ""));
+                }
+                
+                return label;
+            }
+        };
+    }
+
+
+
+    private JSplitPane createSplitPane() {
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setTopComponent(createTablePanel());
+        splitPane.setBottomComponent(new JBScrollPane(sqlTextArea));
+        splitPane.setDividerLocation(DIVIDER_LOCATION);
+        splitPane.setEnabled(true);
+        return splitPane;
+    }
+
+    private JPanel createTablePanel() {
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        JBScrollPane tableScrollPane = new JBScrollPane(table);
+        table.setPreferredScrollableViewportSize(new Dimension(DIALOG_WIDTH, TABLE_HEIGHT));
+        setupTable();
+        tablePanel.add(tableScrollPane);
+        return tablePanel;
+    }
+
+    /**
+     * SQL 미리보기를 위한 텍스트 영역을 생성합니다.
+     */
+    private JTextArea createSqlTextArea() {
+        JTextArea textArea = new JTextArea();
+        textArea.setRows(5);
+        textArea.setEditable(false);
+        textArea.setFont(new Font("Monospace", Font.PLAIN, 12));
+        textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        return textArea;
+    }
+
+    /**
+     * 선택된 로케일에 따라 Faker 인스턴스를 업데이트합니다.
+     */
+    private void updateFakerLocale() {
+        FakerDataLocaleType selectedLocale = (FakerDataLocaleType) countryComboBox.getSelectedItem();
+        if (selectedLocale != null) {
+            // 새로운 Faker 인스턴스 생성
+            faker = new Faker(new Locale(selectedLocale.getCode()));
+
+            // 테이블이 있고 모델이 있는 경우에만 업데이트
+            if (table.getModel() != null) {
+                // 모든 DataTypePanel에 새로운 Faker 인스턴스 전달
+                for (int col = 0; col < table.getColumnCount(); col++) {
+                    Object value = table.getValueAt(0, col);
+                    if (value instanceof DataTypePanel) {
+                        ((DataTypePanel) value).updateFaker(faker);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 현재 설정된 데이터 타입에 따라 SQL 문을 생성하고 업데이트합니다.
+     */
+    public void updateSql() {
+        try {
+            List<Field<String, String>> fields = new ArrayList<>();
+
+            // 각 컬럼에 대해
+            for (int col = 0; col < table.getColumnCount(); col++) {
+                Object value = table.getValueAt(0, col);
+                if (value instanceof DataTypePanel panel) {
+                    String columnName = table.getColumnModel().getColumn(col).getHeaderValue().toString();
+                    String provider = panel.getSelectedType();
+                    String subType = panel.getSelectedSubType();
+
+                    if (provider != null && subType != null) {
+                        fields.add(field(columnName, () -> {
+                            try {
+//                                Object providerInstance = faker.getClass().getMethod(provider).invoke(faker);
+//                                Method method = providerInstance.getClass().getMethod(subType);
+//                                return String.valueOf(method.invoke(providerInstance));
+                                return String.valueOf(FakerUtils.invokeProviderMethod(faker, provider, subType ));
+
+                            } catch (Exception e) {
+                                return "";
+                            }
+                        }));
+                    }
                 }
             }
 
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return row == 0;  // 첫 번째 행만 편집 가능하도록 설정
+            // 스키마 생성
+            Schema<String, String> schema = Schema.of(fields.toArray(new Field[0]));
+
+            // DB 종류 확인
+            // DB 종류 확인 및 SqlDialect 설정
+            Dbms dbms = dbTable.getDataSource().getDbms();
+            SqlDialect sqlDialect = DbmsDialectMapper.getSqlDialectOrNull(dbms);
+
+            if (sqlDialect == null) {
+                sqlDialect = SqlDialect.MYSQL; // 기본값
+                Messages.showWarningDialog(
+                        String.format("지원되지 않는 데이터베이스 유형 '%s'입니다. MYSQL 형식으로 생성됩니다.", dbms.getDisplayName()),
+                        "데이터베이스 유형 경고"
+                );
             }
-        };
 
-        // TableModel 설정
-        table.setModel(customTableModel);
+            SqlTransformer<String> transformer =
+                    new SqlTransformer.SqlTransformerBuilder<String>()
+                            .batch(5)
+                            .tableName(dbTable.getName())
+                            .dialect(sqlDialect)
+                            .build();
 
-        // 컬럼명 설정
-        for (String columnName : columnNames) {
-            customTableModel.addColumn(columnName);
+            // countField의 값을 정수로 변환하여 사용
+            int count;
+            try {
+                count = Integer.parseInt(countField.getText().trim());
+            } catch (NumberFormatException e) {
+                Messages.showErrorDialog("생성할 데이터 개수는 숫자여야 합니다.", "입력 오류");
+                return;
+            }
+
+            // SQL 생성
+            String output = transformer.generate(schema, count);
+
+            // SQL 텍스트 영역 업데이트
+            sqlTextArea.setText(output);
+
+        } catch (Exception e) {
+            sqlTextArea.setText("SQL 생성 중 오류 발생: " + e.getMessage());
         }
+    }
 
-        //테이블 설정 부분
-        setupTable();
-
-        //테이블 가로 크기 고정. // 컬럼 수 따라 넓이 증감(가변 처리)
-        table.setPreferredScrollableViewportSize(new Dimension(300 * Math.min(columnNames.size(), 10), 500));
-
-        // 예시 데이터 추가 (원하면 제거 가능)
-//        if (columnNames.size() >= 4) {
-//            customTableModel.addRow(new Object[]{"Alfreds Futterkiste", "Maria Anders", "Berlin", "030-0074321"});
-//            customTableModel.addRow(new Object[]{"Antonio Moreno Taquería", "Antonio Moreno", "México D.F.",
-//                                                 "(5) 555-3932"});
-//        }
-
-        JBScrollPane tableScrollPane = new JBScrollPane(table);
-        tableScrollPane.setPreferredSize(new Dimension(-1, 400)); // 테이블 높이 고정
-
-        // SQL 텍스트영역 설정 및 배치
-        sqlTextArea.setRows(5);
-        sqlTextArea.setEditable(false);
-        sqlTextArea.setFont(new Font("Monospace", Font.PLAIN, 12));
-        sqlTextArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // 텍스트 여백
-        sqlTextArea.append("Sql Query");
-        JScrollPane textScrollPane = new JScrollPane(sqlTextArea);
-
-
-        //        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        //        buttonPanel.add(new JButton("Insert"));
-        //        buttonPanel.add(new JButton("Cancel"));
-        //        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        // 테이블 부분을 위한 패널
-        JPanel tablePanel = new JPanel(new BorderLayout());
-        tableScrollPane = new JBScrollPane(table);
-
-        // 테이블 크기를 고정
-        table.setPreferredScrollableViewportSize(new Dimension(800, 300));
-        tablePanel.add(tableScrollPane);
-
-        // SQL 텍스트 영역을 위한 분할 패널 생성
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        splitPane.setTopComponent(tablePanel);
-
-        // SQL 텍스트 영역 설정
-        sqlTextArea.setRows(5);
-        sqlTextArea.setEditable(false);
-        sqlTextArea.setFont(new Font("Monospace", Font.PLAIN, 12));
-        textScrollPane = new JBScrollPane(sqlTextArea);
-
-        // 분할 패널의 아래쪽에 SQL 텍스트 영역 추가
-        splitPane.setBottomComponent(textScrollPane);
-
-        // 분할 패널의 분할 위치 설정
-        splitPane.setDividerLocation(200);
-
-        // 테이블 부분의 크기 조절 비활성화
-        splitPane.setEnabled(true);
-
-        mainPanel.add(topPanel, BorderLayout.NORTH);
-        mainPanel.add(splitPane, BorderLayout.CENTER);
-
-        // 전체 패널 크기 설정
-        mainPanel.setPreferredSize(new Dimension(800, 600));
-
-        return mainPanel;
+    public DasObject getDbTable() {
+        return dbTable;
     }
 
     // Faker 업데이트 메서드
@@ -229,6 +340,12 @@ public class DataFakerDialogJava extends DialogWrapper {
         System.out.printf("Faker Test: %s\n", faker.name().fullName());
     }
 
+    /**
+     * 테이블 설정을 초기화하고 구성합니다.
+     * - 컬럼 설정
+     * - 데이터 타입 선택 패널 추가
+     * - 렌더러와 에디터 설정
+     */
     private void setupTable() {
         // ✅ DbTable에서 컬럼명 추출
         List<String> columnNames = dbTable.getDasChildren(ObjectKind.COLUMN).map(DasNamed::getName).toList();
@@ -365,111 +482,5 @@ public class DataFakerDialogJava extends DialogWrapper {
             // 컬럼 너비 설정
             column.setPreferredWidth(200);  // 두 콤보박스가 들어갈 수 있는 충분한 너비
         }
-    }
-
-    private void createUIComponents() {
-        // 국가 콤보박스 초기화
-        countryComboBox = new JComboBox<>(FakerDataLocaleType.values());
-        countryComboBox.setSelectedItem(FakerDataLocaleType.KO_KR); // 기본값 설정
-
-        // locale 변경 이벤트 처리
-        countryComboBox.addActionListener(e -> updateFakerLocale());
-
-        // 초기 Faker 인스턴스 생성
-        updateFakerLocale();
-    }
-
-    private void updateFakerLocale() {
-        FakerDataLocaleType selectedLocale = (FakerDataLocaleType) countryComboBox.getSelectedItem();
-        if (selectedLocale != null) {
-            // 새로운 Faker 인스턴스 생성
-            faker = new Faker(new Locale(selectedLocale.getCode()));
-
-            // 테이블이 있고 모델이 있는 경우에만 업데이트
-            if (table.getModel() != null) {
-                // 모든 DataTypePanel에 새로운 Faker 인스턴스 전달
-                for (int col = 0; col < table.getColumnCount(); col++) {
-                    Object value = table.getValueAt(0, col);
-                    if (value instanceof DataTypePanel) {
-                        ((DataTypePanel) value).updateFaker(faker);
-                    }
-                }
-            }
-        }
-    }
-
-    public void updateSql() {
-        try {
-            List<Field<String, String>> fields = new ArrayList<>();
-
-            // 각 컬럼에 대해
-            for (int col = 0; col < table.getColumnCount(); col++) {
-                Object value = table.getValueAt(0, col);
-                if (value instanceof DataTypePanel panel) {
-                    String columnName = table.getColumnModel().getColumn(col).getHeaderValue().toString();
-                    String provider = panel.getSelectedType();
-                    String subType = panel.getSelectedSubType();
-
-                    if (provider != null && subType != null) {
-                        fields.add(field(columnName, () -> {
-                            try {
-//                                Object providerInstance = faker.getClass().getMethod(provider).invoke(faker);
-//                                Method method = providerInstance.getClass().getMethod(subType);
-//                                return String.valueOf(method.invoke(providerInstance));
-                                return String.valueOf(FakerUtils.invokeProviderMethod(faker, provider, subType ));
-
-                            } catch (Exception e) {
-                                return "";
-                            }
-                        }));
-                    }
-                }
-            }
-
-            // 스키마 생성
-            Schema<String, String> schema = Schema.of(fields.toArray(new Field[0]));
-
-            // DB 종류 확인
-            // DB 종류 확인 및 SqlDialect 설정
-            Dbms dbms = dbTable.getDataSource().getDbms();
-            SqlDialect sqlDialect = DbmsDialectMapper.getSqlDialectOrNull(dbms);
-
-            if (sqlDialect == null) {
-                sqlDialect = SqlDialect.MYSQL; // 기본값
-                Messages.showWarningDialog(
-                        String.format("지원되지 않는 데이터베이스 유형 '%s'입니다. MYSQL 형식으로 생성됩니다.", dbms.getDisplayName()),
-                        "데이터베이스 유형 경고"
-                );
-            }
-
-            SqlTransformer<String> transformer =
-                    new SqlTransformer.SqlTransformerBuilder<String>()
-                            .batch(5)
-                            .tableName(dbTable.getName())
-                            .dialect(sqlDialect)
-                            .build();
-
-            // countField의 값을 정수로 변환하여 사용
-            int count;
-            try {
-                count = Integer.parseInt(countField.getText().trim());
-            } catch (NumberFormatException e) {
-                Messages.showErrorDialog("생성할 데이터 개수는 숫자여야 합니다.", "입력 오류");
-                return;
-            }
-
-            // SQL 생성
-            String output = transformer.generate(schema, count);
-
-            // SQL 텍스트 영역 업데이트
-            sqlTextArea.setText(output);
-
-        } catch (Exception e) {
-            sqlTextArea.setText("SQL 생성 중 오류 발생: " + e.getMessage());
-        }
-    }
-
-    public DasObject getDbTable() {
-        return dbTable;
     }
 }

@@ -7,6 +7,7 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 import net.datafaker.Faker;
@@ -33,6 +34,9 @@ public class DataFakerDialogJava extends DialogWrapper {
     private final JTextArea                      sqlTextArea;
     private       Faker                          faker;
     private       JComboBox<FakerDataLocaleType> countryComboBox;
+    private JTextField
+            countField; // 추가된 부분
+
 
 
     public DataFakerDialogJava(DbTable dbTable) {
@@ -55,7 +59,7 @@ public class DataFakerDialogJava extends DialogWrapper {
         gbc.anchor = GridBagConstraints.WEST;
 
         JLabel     countLabel = new JLabel("생성할 데이터 개수");
-        JTextField countField = new JTextField("100", 10);
+        countField = new JBTextField("100", 10);
 
         JLabel countryLabel = new JLabel("국가");
         //        ComboBox<String> countryComboBox = new ComboBox<>(new String[]{"KO", "US", "JP", "CN"});
@@ -433,8 +437,17 @@ public class DataFakerDialogJava extends DialogWrapper {
                             .dialect(SqlDialect.POSTGRES)
                             .build();
 
+            // countField의 값을 정수로 변환하여 사용
+            int count;
+            try {
+                count = Integer.parseInt(countField.getText().trim());
+            } catch (NumberFormatException e) {
+                Messages.showErrorDialog("생성할 데이터 개수는 숫자여야 합니다.", "입력 오류");
+                return;
+            }
+
             // SQL 생성
-            String output = transformer.generate(schema, 10);
+            String output = transformer.generate(schema, count);
 
             // SQL 텍스트 영역 업데이트
             sqlTextArea.setText(output);

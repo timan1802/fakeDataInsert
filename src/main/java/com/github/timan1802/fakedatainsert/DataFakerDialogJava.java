@@ -2,6 +2,7 @@ package com.github.timan1802.fakedatainsert;
 
 import com.intellij.database.Dbms;
 import com.intellij.database.model.DasNamed;
+import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
 import com.intellij.database.psi.DbTable;
 import com.intellij.openapi.ui.ComboBox;
@@ -466,5 +467,9 @@ public class DataFakerDialogJava extends DialogWrapper {
         } catch (Exception e) {
             sqlTextArea.setText("SQL 생성 중 오류 발생: " + e.getMessage());
         }
+    }
+
+    public DasObject getDbTable() {
+        return dbTable;
     }
 }

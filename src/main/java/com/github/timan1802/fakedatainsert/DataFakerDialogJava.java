@@ -10,13 +10,21 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 import net.datafaker.Faker;
+import net.datafaker.transformations.Field;
+import net.datafaker.transformations.Schema;
+import net.datafaker.transformations.sql.SqlDialect;
+import net.datafaker.transformations.sql.SqlTransformer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import static net.datafaker.transformations.Field.field;
 
 public class DataFakerDialogJava extends DialogWrapper {
     private final DefaultTableModel              tableModel = new DefaultTableModel();
@@ -230,7 +238,7 @@ public class DataFakerDialogJava extends DialogWrapper {
 
         // 첫 번째 행에 DataTypePanel 추가
         for (int col = 0; col < columnNames.size(); col++) {
-            DataTypePanel panel = new DataTypePanel(availableDataTypes, faker, table, col);
+            DataTypePanel panel = new DataTypePanel(availableDataTypes, faker, table, col, this);
             table.setValueAt(panel, 0, col);  // 직접 setValueAt 사용
         }
 
@@ -303,7 +311,7 @@ public class DataFakerDialogJava extends DialogWrapper {
                             panel = (DataTypePanel) value;
                         } else {
                             // 새 패널 생성이 필요한 경우
-                            panel = new DataTypePanel(availableDataTypes, faker, table, column);
+                            panel = new DataTypePanel(availableDataTypes, faker, table, column, DataFakerDialogJava.this);
                         }
                         if (isSelected) {
                             panel.setBackground(table.getSelectionBackground());
@@ -360,6 +368,54 @@ public class DataFakerDialogJava extends DialogWrapper {
                     }
                 }
             }
+        }
+    }
+
+    public void updateSql() {
+        try {
+            List<Field<String, String>> fields = new ArrayList<>();
+
+            // 각 컬럼에 대해
+            for (int col = 0; col < table.getColumnCount(); col++) {
+                Object value = table.getValueAt(0, col);
+                if (value instanceof DataTypePanel panel) {
+                    String columnName = table.getColumnModel().getColumn(col).getHeaderValue().toString();
+                    String provider = panel.getSelectedType();
+                    String subType = panel.getSelectedSubType();
+
+                    if (provider != null && subType != null) {
+                        fields.add(field(columnName, () -> {
+                            try {
+                                Object providerInstance = faker.getClass().getMethod(provider).invoke(faker);
+                                Method method = providerInstance.getClass().getMethod(subType);
+                                return String.valueOf(method.invoke(providerInstance));
+                            } catch (Exception e) {
+                                return "";
+                            }
+                        }));
+                    }
+                }
+            }
+
+            // 스키마 생성
+            Schema<String, String> schema = Schema.of(fields.toArray(new Field[0]));
+
+            // SQL 변환기 생성
+            SqlTransformer<String> transformer =
+                    new SqlTransformer.SqlTransformerBuilder<String>()
+                            .batch(5)
+                            .tableName(dbTable.getName())
+                            .dialect(SqlDialect.POSTGRES)
+                            .build();
+
+            // SQL 생성
+            String output = transformer.generate(schema, 10);
+
+            // SQL 텍스트 영역 업데이트
+            sqlTextArea.setText(output);
+
+        } catch (Exception e) {
+            sqlTextArea.setText("SQL 생성 중 오류 발생: " + e.getMessage());
         }
     }
 }

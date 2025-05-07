@@ -7,14 +7,16 @@ import java.awt.*;
 import java.util.List;
 
 // 두 콤보박스를 포함할 패널 클래스
-class DataTypePanel extends JPanel {
+public class DataTypePanel extends JPanel {
+    private final DataFakerDialogJava dialog;
     private final JComboBox<String> typeBox;
     private final JComboBox<String> subTypeBox;
     private       Faker             faker;
     private       JTable            table;  // 테이블 참조 추가
     private int column;    // 현재 패널의 열 위치
 
-    public DataTypePanel(String[] types, Faker faker, JTable table, int column) {
+    public DataTypePanel(String[] availableTypes, Faker faker, JTable table, int column, DataFakerDialogJava dialog) {
+        this.dialog = dialog;
         this.faker = faker;
         this.table = table;
         this.column = column;
@@ -22,7 +24,7 @@ class DataTypePanel extends JPanel {
         // BoxLayout으로 변경하여 컴포넌트들이 세로로 쌓이도록 함
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         
-        typeBox = new JComboBox<>(types);
+        typeBox = new JComboBox<>(availableTypes);
         subTypeBox = new JComboBox<>();
         
         // 기본 크기 설정
@@ -48,6 +50,13 @@ class DataTypePanel extends JPanel {
         if (typeBox.getSelectedItem() != null) {
             updateSubTypeBox();
         }
+
+        // Provider 선택 시 SubType 업데이트
+        typeBox.addActionListener(e -> updateSubTypes());
+
+        // SubType 선택 시 SQL 업데이트
+        subTypeBox.addActionListener(e -> triggerSqlUpdate());
+
     }
 
     private void updateTableValues() {
@@ -128,4 +137,30 @@ class DataTypePanel extends JPanel {
             updateTableValues();
         }
     }
+
+    private void updateSubTypes() {
+        String selectedProvider = (String) typeBox.getSelectedItem();
+        if (selectedProvider != null) {
+            List<String> methodNames = FakerUtils.getProviderMethodNames(faker, selectedProvider);
+            subTypeBox.setModel(new DefaultComboBoxModel<>(methodNames.toArray(new String[0])));
+        }
+    }
+
+
+    
+    private void updateSql() {
+//        updateDialogSql();
+    }
+
+    // updateSql을 호출하는 메서드
+    private void triggerSqlUpdate() {
+        if (dialog != null) {
+            dialog.updateSql();
+        }
+    }
+
+
+
+
+
 }

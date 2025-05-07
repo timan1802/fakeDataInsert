@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class FakerUtils {
+    static final String CUSTOM_BIRTHDAY = "yyyy-MM-dd HH:mm:ss";
 
 
     /**
@@ -39,9 +40,9 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
 
         Method providerMethod = faker.getClass().getMethod(providerName);
         Object provider = providerMethod.invoke(faker);
-        
+
         // 메소드 필터링 및 이름 추출
-        return Arrays.stream(provider.getClass().getMethods())
+        List<String> methodList = Arrays.stream(provider.getClass().getMethods())
                      .filter(method ->
                         // Object 클래스의 메소드 제외
                         method.getDeclaringClass() != Object.class &&
@@ -59,7 +60,13 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
                      .map(Method::getName)
                      .sorted()
                      .collect(Collectors.toList());
-                    
+
+        if("date".equals(providerName)) {
+            methodList.add(CUSTOM_BIRTHDAY);
+        }
+
+        return methodList;
+
     } catch (Exception e) {
         e.printStackTrace();
         return Collections.emptyList();
@@ -73,6 +80,9 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
         try {
             if("fullDomain".equals(methodName)) {
                 return faker.domain().fullDomain("my-domain");
+            }
+            if(CUSTOM_BIRTHDAY.equals(methodName)) {
+                return faker.date().birthday(1, 30, "yyyy-MM-dd HH:mm:ss");
             }
 
             Method providerMethod = faker.getClass().getMethod(providerName);

@@ -21,7 +21,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -413,9 +412,11 @@ public class DataFakerDialogJava extends DialogWrapper {
                     if (provider != null && subType != null) {
                         fields.add(field(columnName, () -> {
                             try {
-                                Object providerInstance = faker.getClass().getMethod(provider).invoke(faker);
-                                Method method = providerInstance.getClass().getMethod(subType);
-                                return String.valueOf(method.invoke(providerInstance));
+//                                Object providerInstance = faker.getClass().getMethod(provider).invoke(faker);
+//                                Method method = providerInstance.getClass().getMethod(subType);
+//                                return String.valueOf(method.invoke(providerInstance));
+                                return String.valueOf(FakerUtils.invokeProviderMethod(faker, provider, subType ));
+
                             } catch (Exception e) {
                                 return "";
                             }

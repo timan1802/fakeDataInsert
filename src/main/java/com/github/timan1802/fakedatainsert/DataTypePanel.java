@@ -1,166 +1,214 @@
 package com.github.timan1802.fakedatainsert;
 
+import com.intellij.database.model.DasColumn;
+import com.intellij.database.model.DasObject;
+import com.intellij.database.model.ObjectKind;
 import net.datafaker.Faker;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
-// 두 콤보박스를 포함할 패널 클래스
+/**
+ * Faker 데이터 타입과 서브타입을 선택할 수 있는 패널
+ * 테이블의 각 컬럼에 대한 데이터 생성 설정을 담당
+ */
 public class DataTypePanel extends JPanel {
-    private final DataFakerDialogJava dialog;
-    private final JComboBox<String> typeBox;
-    private final JComboBox<String> subTypeBox;
-    private       Faker             faker;
-    private       JTable            table;  // 테이블 참조 추가
-    private int column;    // 현재 패널의 열 위치
+    private static final int COMBO_BOX_WIDTH = 150;
+    private static final int COMBO_BOX_HEIGHT = 25;
+    private static final int VERTICAL_GAP = 2;
+    private final DataFakerDialogJava dialog;    // 부모 다이얼로그 참조
+    private final JTable table;                  // 부모 테이블 참조
+    private final int columnIndex;               // 현재 패널의 컬럼 인덱스
+    private JComboBox<String> typeBox;     // 메인 데이터 타입 선택
+    private JComboBox<String> subTypeBox;  // 서브 타입 선택
+    private Faker             faker;                         // 데이터 생성기
 
-    public DataTypePanel(String[] availableTypes, Faker faker, JTable table, int column, DataFakerDialogJava dialog) {
+    /**
+     * DataTypePanel 생성자
+     *
+     * @param availableTypes Faker에서 사용 가능한 데이터 타입 목록
+     * @param faker Faker 인스턴스
+     * @param table 부모 테이블
+     * @param columnIndex 컬럼 인덱스
+     * @param dialog 부모 다이얼로그
+     */
+    public DataTypePanel(String[] availableTypes, Faker faker, JTable table, int columnIndex, DataFakerDialogJava dialog) {
         this.dialog = dialog;
         this.faker = faker;
         this.table = table;
-        this.column = column;
+        this.columnIndex = columnIndex;
         
-        // BoxLayout으로 변경하여 컴포넌트들이 세로로 쌓이도록 함
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        
-        typeBox = new JComboBox<>(availableTypes);
-        subTypeBox = new JComboBox<>();
-        
-        // 기본 크기 설정
-        typeBox.setPreferredSize(new Dimension(150, 25));
-        typeBox.setMaximumSize(new Dimension(150, 25));  // BoxLayout에서 중요
-        
-        subTypeBox.setPreferredSize(new Dimension(150, 25));
-        subTypeBox.setMaximumSize(new Dimension(150, 25));  // BoxLayout에서 중요
-        
-        // 이벤트 리스너 추가
-        typeBox.addActionListener(e -> updateSubTypeBox());
-        subTypeBox.addActionListener(e -> updateTableValues());
-        
-        // 약간의 여백 추가
-        add(Box.createVerticalStrut(2));  // 상단 여백
-        add(typeBox);
-        add(Box.createVerticalStrut(2));  // 콤보박스 사이 여백
-        add(subTypeBox);
-        add(Box.createVerticalStrut(2));  // 하단 여백
-        
-        setOpaque(true);
+        initializeLayout();
+        initializeComboBoxes(availableTypes);
+        setupListeners();
+        setupInitialState();
+        checkAndSetColumnDefaults();
+    }
 
+    /**
+     * 패널 레이아웃 초기화
+     */
+    private void initializeLayout() {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setOpaque(true);
+    }
+
+    /**
+     * 콤보박스 초기화 및 설정
+     */
+    private void initializeComboBoxes(String[] availableTypes) {
+        typeBox = createComboBox(availableTypes);
+        subTypeBox = createComboBox(new String[]{});
+        
+        add(Box.createVerticalStrut(VERTICAL_GAP));
+        add(typeBox);
+        add(Box.createVerticalStrut(VERTICAL_GAP));
+        add(subTypeBox);
+        add(Box.createVerticalStrut(VERTICAL_GAP));
+    }
+
+    /**
+     * 표준화된 콤보박스 생성
+     */
+    private JComboBox<String> createComboBox(String[] items) {
+        JComboBox<String> comboBox = new JComboBox<>(items);
+        comboBox.setPreferredSize(new Dimension(COMBO_BOX_WIDTH, COMBO_BOX_HEIGHT));
+        comboBox.setMaximumSize(new Dimension(COMBO_BOX_WIDTH, COMBO_BOX_HEIGHT));
+        return comboBox;
+    }
+
+    /**
+     * 이벤트 리스너 설정
+     */
+    private void setupListeners() {
+        typeBox.addActionListener(e -> {
+            updateSubTypeBox();
+            triggerSqlUpdate();
+        });
+        
+        subTypeBox.addActionListener(e -> {
+            updateTableValues();
+            triggerSqlUpdate();
+        });
+    }
+
+    /**
+     * 초기 상태 설정
+     */
+    private void setupInitialState() {
         if (typeBox.getSelectedItem() != null) {
             updateSubTypeBox();
         }
-
-        // Provider 선택 시 SubType 업데이트
-        typeBox.addActionListener(e -> updateSubTypes());
-
-        // SubType 선택 시 SQL 업데이트
-        subTypeBox.addActionListener(e -> triggerSqlUpdate());
-
     }
 
+    /**
+     * 컬럼 타입에 따른 기본값 설정
+     */
+    private void checkAndSetColumnDefaults() {
+        String columnName = table.getColumnModel().getColumn(columnIndex).getHeaderValue().toString().toLowerCase();
+        DasColumn column = getColumnFromDbTable(columnName);
+        
+        if (column != null && columnName.contains("id")) {
+            String dataType = column.getDasType().toString().toLowerCase();
+            if (dataType.contains("int") || dataType.contains("bigint")) {
+                setTypeAndSubType("number", "positive");
+            }
+        }
+    }
+
+    /**
+     * DbTable에서 컬럼 정보 조회
+     */
+    private DasColumn getColumnFromDbTable(String columnName) {
+        for (DasObject col : dialog.getDbTable().getDasChildren(ObjectKind.COLUMN)) {
+            if (col instanceof DasColumn && col.getName().equalsIgnoreCase(columnName)) {
+                return (DasColumn) col;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 타입과 서브타입 설정
+     */
+    private void setTypeAndSubType(String type, String subType) {
+        typeBox.setSelectedItem(type);
+        updateSubTypeBox();
+        subTypeBox.setSelectedItem(subType);
+    }
+
+    /**
+     * 테이블 미리보기 값 업데이트
+     */
     private void updateTableValues() {
         String providerName = getSelectedType();
         String methodName = getSelectedSubType();
 
-        if (providerName != null && methodName != null && table != null) {
-            // 샘플 값 5개 생성하여 테이블에 설정
-            for (int i = 1; i <= 2; i++) {  // 2행과 3행에 대해
+        if (providerName != null && methodName != null) {
+            for (int row = 1; row <= 2; row++) {
                 Object value = FakerUtils.invokeProviderMethod(faker, providerName, methodName);
-                table.setValueAt(value, i, column);  // i행, column열에 값 설정
+                table.setValueAt(value, row, columnIndex);
             }
-            table.repaint();  // 테이블 갱신
+            table.repaint();
         }
     }
 
+    /**
+     * 서브타입 콤보박스 업데이트
+     */
     private void updateSubTypeBox() {
-        String selectedProvider = (String) typeBox.getSelectedItem();
-        if (selectedProvider != null) {
-            // 현재 선택된 값 저장
-            Object currentSelection = subTypeBox.getSelectedItem();
+        String selectedProvider = getSelectedType();
+        if (selectedProvider == null) return;
 
-            // 콤보박스 아이템 업데이트
-            subTypeBox.removeAllItems();
+        Object currentSelection = subTypeBox.getSelectedItem();
+        List<String> methodNames = FakerUtils.getProviderMethodNames(faker, selectedProvider);
 
-            // 선택된 Provider의 메서드 목록 가져오기
-            List<String> methodNames = FakerUtils.getProviderMethodNames(faker, selectedProvider);
+        subTypeBox.removeAllItems();
+        methodNames.stream()
+                .sorted()
+                .forEach(subTypeBox::addItem);
 
-            // 정렬하여 콤보박스에 추가
-            methodNames.stream()
-                    .sorted()
-                    .forEach(subTypeBox::addItem);
-
-            // 이전 선택값이 있고 새 목록에도 있다면 다시 선택
-            if (currentSelection != null && methodNames.contains(currentSelection)) {
-                subTypeBox.setSelectedItem(currentSelection);
-            } else if (subTypeBox.getItemCount() > 0) {
-                subTypeBox.setSelectedIndex(0);  // 첫 번째 항목 선택
-            }
+        if (currentSelection != null && methodNames.contains(currentSelection)) {
+            subTypeBox.setSelectedItem(currentSelection);
+        } else if (subTypeBox.getItemCount() > 0) {
+            subTypeBox.setSelectedIndex(0);
         }
     }
 
+    // Getter 메서드들
     public String getSelectedType() {
         return (String) typeBox.getSelectedItem();
-    }
-
-    public void setSelectedType(String type) {
-        typeBox.setSelectedItem(type);
     }
 
     public String getSelectedSubType() {
         return (String) subTypeBox.getSelectedItem();
     }
 
-    public void setSelectedSubType(String type) {
-        subTypeBox.setSelectedItem(type);
-    }
-
+    /**
+     * Faker 인스턴스 업데이트
+     */
     public void updateFaker(Faker newFaker) {
         this.faker = newFaker;
-        // Provider 목록 업데이트가 필요한 경우 여기에 추가
-
-        // 현재 선택된 값들 저장
         String currentType = getSelectedType();
         String currentSubType = getSelectedSubType();
 
-        // 필요한 경우 콤보박스 업데이트
         if (currentType != null) {
             updateSubTypeBox();
-
-            // 이전 선택값 복원
-            setSelectedType(currentType);
+            typeBox.setSelectedItem(currentType);
             if (currentSubType != null) {
-                setSelectedSubType(currentSubType);
+                subTypeBox.setSelectedItem(currentSubType);
             }
-
-            // 테이블 값 업데이트
             updateTableValues();
         }
     }
 
-    private void updateSubTypes() {
-        String selectedProvider = (String) typeBox.getSelectedItem();
-        if (selectedProvider != null) {
-            List<String> methodNames = FakerUtils.getProviderMethodNames(faker, selectedProvider);
-            subTypeBox.setModel(new DefaultComboBoxModel<>(methodNames.toArray(new String[0])));
-        }
-    }
-
-
-    
-    private void updateSql() {
-//        updateDialogSql();
-    }
-
-    // updateSql을 호출하는 메서드
+    /**
+     * SQL 업데이트 트리거
+     */
     private void triggerSqlUpdate() {
         if (dialog != null) {
             dialog.updateSql();
         }
     }
-
-
-
-
-
 }

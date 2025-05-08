@@ -116,7 +116,7 @@ public class DataFakerDialogJava extends DialogWrapper {
      * 데이터 생성 개수 관련 컴포넌트를 추가합니다.
      */
     private void addCountComponents(JPanel panel, GridBagConstraints gbc) {
-        JLabel countLabel = new JLabel("생성할 데이터 개수");
+        JLabel countLabel = new JLabel("Number of data to generate"); //생성할 데이터 개수
         countField = new JBTextField(String.valueOf(DEFAULT_ROW_COUNT), 10);
         
         // 실시간 업데이트를 위한 문서 리스너 추가
@@ -162,7 +162,7 @@ public class DataFakerDialogJava extends DialogWrapper {
      * 국가 선택 관련 컴포넌트를 추가합니다.
      */
     private void addCountryComponents(JPanel panel, GridBagConstraints gbc) {
-        JLabel countryLabel = new JLabel("국가");
+        JLabel countryLabel = new JLabel("Country");
         countryComboBox = new ComboBox<>(FakerDataLocaleType.values());
         setupCountryComboBox();
 
@@ -322,8 +322,8 @@ public class DataFakerDialogJava extends DialogWrapper {
             if (sqlDialect == null) {
                 sqlDialect = SqlDialect.MYSQL; // 기본값
                 Messages.showWarningDialog(
-                        String.format("지원되지 않는 데이터베이스 유형 '%s'입니다. MYSQL 형식으로 생성됩니다.", dbms.getDisplayName()),
-                        "데이터베이스 유형 경고"
+                        String.format("Unsupported database type '%s'. It is created in MYSQL format.", dbms.getDisplayName()),
+                        "Database Type Warning"
                 );
             }
 
@@ -339,7 +339,8 @@ public class DataFakerDialogJava extends DialogWrapper {
             try {
                 count = Integer.parseInt(countField.getText().trim());
             } catch (NumberFormatException e) {
-                Messages.showErrorDialog("생성할 데이터 개수는 숫자여야 합니다.", "입력 오류");
+                //생성할 데이터 개수는 숫자여야 합니다.
+                Messages.showErrorDialog("Must be numbers.", "INPUT ERROR");
                 return;
             }
 
@@ -350,7 +351,8 @@ public class DataFakerDialogJava extends DialogWrapper {
             sqlTextArea.setText(output);
 
         } catch (Exception e) {
-            sqlTextArea.setText("SQL 생성 중 오류 발생: " + e.getMessage());
+            //SQL 생성 중 오류 발생
+            sqlTextArea.setText("Error occurs during SQL creation: " + e.getMessage());
         }
     }
 

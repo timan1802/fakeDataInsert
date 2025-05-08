@@ -5,6 +5,7 @@ import com.intellij.database.model.DasNamed;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
 import com.intellij.database.psi.DbTable;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBScrollPane;
@@ -42,7 +43,7 @@ public class DataFakerDialogJava extends DialogWrapper {
     private static final int DIALOG_HEIGHT = 600;      // 대화상자 높이
     private static final int TABLE_HEIGHT = 300;       // 테이블 높이
     private static final int DIVIDER_LOCATION = 200;   // 분할창 구분자 위치
-    
+
     // UI 컴포넌트
     private final DefaultTableModel tableModel;        // 테이블 데이터 모델
     private final JBTable table;                       // 데이터 미리보기 테이블
@@ -124,7 +125,7 @@ public class DataFakerDialogJava extends DialogWrapper {
      */
     private void addCountryComponents(JPanel panel, GridBagConstraints gbc) {
         JLabel countryLabel = new JLabel("국가");
-        countryComboBox = new JComboBox<>(FakerDataLocaleType.values());
+        countryComboBox = new ComboBox<>(FakerDataLocaleType.values());
         setupCountryComboBox();
 
         gbc.gridx = 0;
@@ -153,7 +154,7 @@ public class DataFakerDialogJava extends DialogWrapper {
     private ListCellRenderer<FakerDataLocaleType> createCountryComboBoxRenderer() {
         return new ListCellRenderer<FakerDataLocaleType>() {
             // 기본 렌더링을 위한 DefaultListCellRenderer 인스턴스
-            protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+            private final DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
             /**
              * 콤보박스의 각 항목을 렌더링하는 메서드
@@ -226,7 +227,7 @@ public class DataFakerDialogJava extends DialogWrapper {
         FakerDataLocaleType selectedLocale = (FakerDataLocaleType) countryComboBox.getSelectedItem();
         if (selectedLocale != null) {
             // 새로운 Faker 인스턴스 생성
-            faker = new Faker(new Locale(selectedLocale.getCode()));
+            faker = new Faker(Locale.forLanguageTag(selectedLocale.getCode()));
 
             // 테이블이 있고 모델이 있는 경우에만 업데이트
             if (table.getModel() != null) {
@@ -275,7 +276,6 @@ public class DataFakerDialogJava extends DialogWrapper {
             // 스키마 생성
             Schema<String, String> schema = Schema.of(fields.toArray(new Field[0]));
 
-            // DB 종류 확인
             // DB 종류 확인 및 SqlDialect 설정
             Dbms dbms = dbTable.getDataSource().getDbms();
             SqlDialect sqlDialect = DbmsDialectMapper.getSqlDialectOrNull(dbms);
@@ -319,26 +319,6 @@ public class DataFakerDialogJava extends DialogWrapper {
         return dbTable;
     }
 
-    // Faker 업데이트 메서드
-    private void updateFaker(FakerDataLocaleType locale) {
-        try {
-            faker = new Faker(new Locale(locale.getCode()));
-            // 필요한 경우 테이블 데이터 갱신
-            refreshTableData();
-            // 테이블 재설정 (새로운 Faker의 Provider 목록으로 갱신)
-            setupTable();
-        } catch (Exception e) {
-            // 에러 처리
-            Messages.showErrorDialog("로케일 '" + locale.getCode() + "' 설정 중 오류가 발생했습니다.", "Faker 초기화 오류");
-        }
-    }
-
-    // 테이블 데이터 갱신 메서드 (필요한 경우 구현)
-    private void refreshTableData() {
-        // 테이블의 데이터를 새로운 Faker 인스턴스를 사용하여 갱신
-        // 예: 미리보기 데이터 등을 갱신
-        System.out.printf("Faker Test: %s\n", faker.name().fullName());
-    }
 
     /**
      * 테이블 설정을 초기화하고 구성합니다.
@@ -399,8 +379,7 @@ public class DataFakerDialogJava extends DialogWrapper {
                 if (row == 0) {  // 첫 번째 행인 경우에만
                     table.editCellAt(row, col);
                     Component editor = table.getEditorComponent();
-                    if (editor instanceof DataTypePanel) {
-                        DataTypePanel panel = (DataTypePanel) editor;
+                    if (editor instanceof final DataTypePanel panel) {
                         // 클릭된 위치에 따라 적절한 콤보박스 표시
                         Point p = e.getPoint();
                         p.y = 0;  // 패널 내 y좌표 조정

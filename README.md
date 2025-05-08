@@ -42,9 +42,11 @@ IntelliJ IDEA를 위한 데이터베이스 테이블 더미 데이터 생성 플
 
 ## 주요 기능 스크린샷
 
-![Image](https://github.com/user-attachments/assets/dfc4d073-d1c0-4c9b-97f1-be16116837ce)
-![Image](https://github.com/user-attachments/assets/526c18b7-92c0-4014-95a3-8ffbb5e8246f)
-![Image](https://github.com/user-attachments/assets/c15811a1-523e-49f1-b88c-e84f28a43f01)
+![테이블우클릭](https://github.com/user-attachments/assets/526c18b7-92c0-4014-95a3-8ffbb5e8246f)
+![최초화면](https://github.com/user-attachments/assets/c15811a1-523e-49f1-b88c-e84f28a43f01)
+![옵션](https://github.com/user-attachments/assets/dfc4d073-d1c0-4c9b-97f1-be16116837ce)
+
+
 
 
 ## 크레딧

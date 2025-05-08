@@ -1,51 +1,53 @@
-# fakeDataInsert
+# Fake Data Insert Plugin
 
-![Build](https://github.com/timan1802/fakeDataInsert/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
+IntelliJ IDEA를 위한 데이터베이스 테이블 더미 데이터 생성 플러그인입니다.
 
-## Template ToDo list
-- [x] Create a new [IntelliJ Platform Plugin Template][template] project.
-- [ ] Get familiar with the [template documentation][template].
-- [ ] Adjust the [pluginGroup](./gradle.properties) and [pluginName](./gradle.properties), as well as the [id](./src/main/resources/META-INF/plugin.xml) and [sources package](./src/main/kotlin).
-- [ ] Adjust the plugin description in `README` (see [Tips][docs:plugin-description])
-- [ ] Review the [Legal Agreements](https://plugins.jetbrains.com/docs/marketplace/legal-agreements.html?from=IJPluginTemplate).
-- [ ] [Publish a plugin manually](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate) for the first time.
-- [ ] Set the `MARKETPLACE_ID` in the above README badges. You can obtain it once the plugin is published to JetBrains Marketplace.
-- [ ] Set the [Plugin Signing](https://plugins.jetbrains.com/docs/intellij/plugin-signing.html?from=IJPluginTemplate) related [secrets](https://github.com/JetBrains/intellij-platform-plugin-template#environment-variables).
-- [ ] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html?from=IJPluginTemplate).
-- [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
+## 기능
 
 <!-- Plugin description -->
-This Fancy IntelliJ Platform Plugin is going to be your implementation of the brilliant ideas that you have.
-
-This specific section is a source for the [plugin.xml](/src/main/resources/META-INF/plugin.xml) file which will be extracted by the [Gradle](/build.gradle.kts) during the build process.
-
-To keep everything working, do not remove `<!-- ... -->` sections. 
+- 데이터베이스 테이블에 더미 데이터를 손쉽게 생성
+- 다양한 데이터 타입 지원 (문자열, 숫자, 날짜 등)
+- 다국어 지원 (한국어, 영어)
+- 미리보기 기능으로 생성될 데이터 확인 가능
+- 직관적인 UI로 손쉬운 사용
+- 커스텀 데이터 포맷 지원
 <!-- Plugin description end -->
 
-## Installation
+## 설치 방법
 
-- Using the IDE built-in plugin system:
-  
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "fakeDataInsert"</kbd> >
-  <kbd>Install</kbd>
-  
-- Using JetBrains Marketplace:
+### IntelliJ IDEA 마켓플레이스를 통한 설치
 
-  Go to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID) and install it by clicking the <kbd>Install to ...</kbd> button in case your IDE is running.
+1. IntelliJ IDEA에서 `설정(Settings)` > `플러그인(Plugins)` 메뉴로 이동
+2. 마켓플레이스 탭에서 "Fake Data Insert" 검색
+3. `설치(Install)` 버튼 클릭
 
-  You can also download the [latest release](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID/versions) from JetBrains Marketplace and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+### 수동 설치
 
-- Manually:
+1. [릴리즈 페이지](https://github.com/timan1802/fakeDataInsert/releases)에서 최신 버전 다운로드
+2. IntelliJ IDEA에서 `설정(Settings)` > `플러그인(Plugins)` 메뉴로 이동
+3. ⚙️ 아이콘 클릭 후 `디스크에서 플러그인 설치(Install Plugin from Disk...)` 선택
+4. 다운로드한 파일 선택
 
-  Download the [latest release](https://github.com/timan1802/fakeDataInsert/releases/latest) and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+## 사용 방법
+
+1. 데이터베이스 도구 창에서 테이블 선택
+2. 마우스 오른쪽 버튼 클릭하여 컨텍스트 메뉴 열기
+3. "Generate Fake Data" 메뉴 선택
+4. 데이터 생성 옵션 설정
+  - 생성할 레코드 수 지정
+  - 각 컬럼별 데이터 타입 선택
+  - 데이터 형식 커스터마이징
+5. 미리보기로 생성될 데이터 확인
+6. 생성된 SQL 복사하여 사용
+
+## 주요 기능 스크린샷
+
+![Image](https://github.com/user-attachments/assets/dfc4d073-d1c0-4c9b-97f1-be16116837ce)
+![Image](https://github.com/user-attachments/assets/526c18b7-92c0-4014-95a3-8ffbb5e8246f)
+![Image](https://github.com/user-attachments/assets/c15811a1-523e-49f1-b88c-e84f28a43f01)
 
 
----
-Plugin based on the [IntelliJ Platform Plugin Template][template].
+## 크레딧
 
-[template]: https://github.com/JetBrains/intellij-platform-plugin-template
-[docs:plugin-description]: https://plugins.jetbrains.com/docs/intellij/plugin-user-experience.html#plugin-description-and-presentation
+이 플러그인은 다음 라이브러리를 사용합니다:
+- [DataFaker](https://github.com/datafaker-net/datafaker) - 더미 데이터 생성 라이브러리

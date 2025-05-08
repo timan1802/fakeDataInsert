@@ -1,4 +1,4 @@
-package com.github.timan1802.fakedatainsert;
+package com.github.timan1802.fakedatainsert.utils;
 
 import net.datafaker.Faker;
 
@@ -22,6 +22,22 @@ public class FakerUtils {
         for (Method method : faker.getClass().getMethods()) {
             if (method.getParameterCount() == 0 &&
                 method.getReturnType().getPackageName().startsWith("net.datafaker.providers.base")) {
+                //제외
+                if("drivingLicense".equals(method.getName())){
+                    continue;
+                }else
+                if("duration".equals(method.getName())){
+                    continue;
+                }else
+                if("options".equals(method.getName())){
+                    continue;
+                }else
+                if("time".equals(method.getName())){
+                    continue;
+                }else
+                if("unique".equals(method.getName())){
+                    continue;
+                }
                 providerNames.add(method.getName());
             }
         }
@@ -97,16 +113,4 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
         }
     }
 
-    // 테스트
-    public static void main(String[] args) {
-        Faker faker = new Faker();
-        System.out.println("== Providers ==");
-        getAllProviderNames(faker).forEach(System.out::println);
-
-        System.out.println("\n== Methods in 'name' Provider ==");
-        getProviderMethodNames(faker, "name").forEach(System.out::println);
-
-        System.out.println("\n== Sample execution of 'name.firstName' ==");
-        System.out.println(invokeProviderMethod(faker, "name", "firstName"));
-    }
 }

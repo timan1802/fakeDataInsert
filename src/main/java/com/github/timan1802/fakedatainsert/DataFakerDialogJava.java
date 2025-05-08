@@ -1,5 +1,6 @@
 package com.github.timan1802.fakedatainsert;
 
+import com.github.timan1802.fakedatainsert.utils.FakerUtils;
 import com.intellij.database.Dbms;
 import com.intellij.database.model.DasNamed;
 import com.intellij.database.model.DasObject;

@@ -20,8 +20,11 @@ import net.datafaker.transformations.sql.SqlTransformer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -52,6 +55,9 @@ public class DataFakerDialogJava extends DialogWrapper {
     private Faker faker;                               // 가짜 데이터 생성기
     private JComboBox<FakerDataLocaleType> countryComboBox; // 국가/언어 선택 콤보박스
     private JTextField countField;                     // 생성할 데이터 개수 입력 필드
+
+    // 클래스 필드에 추가
+    private CheckBoxHeaderRenderer[] checkBoxHeaders;
 
     /**
      * 대화상자 생성자
@@ -251,6 +257,11 @@ public class DataFakerDialogJava extends DialogWrapper {
 
             // 각 컬럼에 대해
             for (int col = 0; col < table.getColumnCount(); col++) {
+                // 체크되지 않은 컬럼은 건너뛰기
+                if (!checkBoxHeaders[col].isColumnChecked()) {
+                    continue;
+                }
+
                 Object value = table.getValueAt(0, col);
                 if (value instanceof DataTypePanel panel) {
                     String columnName = table.getColumnModel().getColumn(col).getHeaderValue().toString();
@@ -260,11 +271,7 @@ public class DataFakerDialogJava extends DialogWrapper {
                     if (provider != null && subType != null) {
                         fields.add(field(columnName, () -> {
                             try {
-//                                Object providerInstance = faker.getClass().getMethod(provider).invoke(faker);
-//                                Method method = providerInstance.getClass().getMethod(subType);
-//                                return String.valueOf(method.invoke(providerInstance));
-                                return String.valueOf(FakerUtils.invokeProviderMethod(faker, provider, subType ));
-
+                                return String.valueOf(FakerUtils.invokeProviderMethod(faker, provider, subType));
                             } catch (Exception e) {
                                 return "";
                             }
@@ -331,9 +338,8 @@ public class DataFakerDialogJava extends DialogWrapper {
         List<String> columnNames = dbTable.getDasChildren(ObjectKind.COLUMN).map(DasNamed::getName).toList();
 
         // Faker의 Provider 목록을 가져와서 availableDataTypes로 사용
-        String[] availableDataTypes = FakerUtils.getAllProviderNames(faker).stream().sorted()  // 알파벳 순으로 정렬
-                                                .toArray(String[]::new)
-                ;
+        String[] availableDataTypes = FakerUtils.getAllProviderNames(faker).stream().sorted()
+                .toArray(String[]::new);
 
         // TableModel을 수정하여 JComboBox를 제대로 처리하도록 함
         DefaultTableModel tableModel = new DefaultTableModel();
@@ -346,6 +352,14 @@ public class DataFakerDialogJava extends DialogWrapper {
         // 먼저 테이블 모델 설정
         table.setModel(tableModel);
 
+        // ✅ checkBoxHeaders 배열 초기화 - 여기로 이동
+        checkBoxHeaders = new CheckBoxHeaderRenderer[table.getColumnCount()];
+        for (int col = 0; col < table.getColumnCount(); col++) {
+            TableColumn column = table.getColumnModel().getColumn(col);
+            checkBoxHeaders[col] = new CheckBoxHeaderRenderer(col);
+            column.setHeaderRenderer(checkBoxHeaders[col]);
+        }
+
         // 3개의 빈 행 추가 (DataTypePanel용 1행 + 샘플 데이터용 2행)
         tableModel.addRow(new Object[columnNames.size()]);  // 첫 번째 행
         tableModel.addRow(new Object[columnNames.size()]);  // 두 번째 행
@@ -356,14 +370,13 @@ public class DataFakerDialogJava extends DialogWrapper {
         table.setRowHeight(1, 30);  // 두 번째 행
         table.setRowHeight(2, 30);  // 세 번째 행
 
-
-        // 테이블 헤더 높이 설정 (선택사항)
+        // 테이블 헤더 높이 설정
         table.getTableHeader().setPreferredSize(new Dimension(table.getTableHeader().getPreferredSize().width, 30));
 
         // 첫 번째 행에 DataTypePanel 추가
         for (int col = 0; col < columnNames.size(); col++) {
             DataTypePanel panel = new DataTypePanel(availableDataTypes, faker, table, col, this);
-            table.setValueAt(panel, 0, col);  // 직접 setValueAt 사용
+            table.setValueAt(panel, 0, col);
         }
 
         // 한 번 클릭으로 편집 모드 시작하도록 설정
@@ -391,6 +404,22 @@ public class DataFakerDialogJava extends DialogWrapper {
                 }
             }
         });
+
+        // 테이블 헤더 클릭 이벤트 처리
+        table.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int col = table.columnAtPoint(e.getPoint());
+                if (col >= 0 && col < checkBoxHeaders.length) {
+                    Rectangle headerRect = table.getTableHeader().getHeaderRect(col);
+                    // 체크박스 영역 클릭 확인 (왼쪽 20픽셀 정도)
+                    if (e.getX() - headerRect.x < 20) {
+                        checkBoxHeaders[col].setChecked(!checkBoxHeaders[col].isColumnChecked());
+                    }
+                }
+            }
+        });
+        
 
         // 각 컬럼에 대한 렌더러와 에디터 설정
         for (int col = 0; col < table.getColumnCount(); col++) {
@@ -462,4 +491,59 @@ public class DataFakerDialogJava extends DialogWrapper {
             column.setPreferredWidth(200);  // 두 콤보박스가 들어갈 수 있는 충분한 너비
         }
     }
+
+    
+    private class CheckBoxHeaderRenderer extends JCheckBox implements TableCellRenderer {
+        private final int column;
+        private boolean isChecked;
+
+        public CheckBoxHeaderRenderer(int column) {
+            this.column = column;
+            this.isChecked = true; // 기본값 true로 설정
+            setHorizontalAlignment(JLabel.LEFT);
+            setBorderPainted(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                     boolean isSelected, boolean hasFocus,
+                                                     int row, int col) {
+            if (value != null) {
+                setText(value.toString());
+            }
+            setSelected(isChecked);
+            setBackground(table.getTableHeader().getBackground());
+            setForeground(table.getTableHeader().getForeground());
+            setFont(table.getTableHeader().getFont());
+            
+            return this;
+        }
+
+        public boolean isColumnChecked() {
+            return isChecked;
+        }
+
+        public void setChecked(boolean checked) {
+            if (this.isChecked != checked) {
+                this.isChecked = checked;
+                updateColumnState();
+                updateSql();
+            }
+        }
+
+        private void updateColumnState() {
+            // 열의 모든 셀 비활성화/활성화
+            if (table != null) {
+                for (int row = 0; row < table.getRowCount(); row++) {
+                    Object value = table.getValueAt(row, column);
+                    if (value instanceof DataTypePanel panel) {
+                        panel.setEnabled(isChecked);
+                    }
+                }
+                table.getTableHeader().repaint();
+                table.repaint();
+            }
+        }
+    }
+
 }

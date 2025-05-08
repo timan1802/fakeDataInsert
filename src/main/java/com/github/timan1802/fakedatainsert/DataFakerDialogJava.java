@@ -23,6 +23,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -85,8 +86,16 @@ public class DataFakerDialogJava extends DialogWrapper {
 
         mainPanel.add(createTopPanel(), BorderLayout.NORTH);
         mainPanel.add(createSplitPane(), BorderLayout.CENTER);
+        mainPanel.add(createButtonPanel(), BorderLayout.SOUTH);
 
         return mainPanel;
+    }
+
+    private JPanel createButtonPanel() {
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(new JButton("Copy SQL to Clipboard"));
+        buttonPanel.add(new JButton("DB Insert Execute"));
+        return buttonPanel;
     }
 
     /**
@@ -583,5 +592,30 @@ public class DataFakerDialogJava extends DialogWrapper {
             }
         }
     }
-
+    @Override
+    protected JComponent createSouthPanel() {
+        JPanel southPanel = (JPanel) super.createSouthPanel();
+        
+        // Copy SQL 버튼 생성
+        JButton copyButton = new JButton("Copy SQL to Clipboard");
+        copyButton.addActionListener(e -> {
+            try {
+                // 클립보드에 SQL 텍스트 복사
+                StringSelection selection = new StringSelection(sqlTextArea.getText());
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+                
+                // 복사 성공 메시지 표시
+                Messages.showInfoMessage("SQL이 클립보드에 복사되었습니다.", "복사 완료");
+            } catch (Exception ex) {
+                Messages.showErrorDialog("클립보드에 복사하는 중 오류가 발생했습니다: " + ex.getMessage(), "복사 오류");
+            }
+        });
+        
+        // 버튼을 OK 버튼 앞에 추가
+        if (southPanel != null) {
+            southPanel.add(copyButton, BorderLayout.WEST);
+        }
+        
+        return southPanel;
+    }
 }

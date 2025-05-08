@@ -8,6 +8,8 @@
     <depends optional="true" config-file="database.xml">com.intellij.database</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
+    <resource-bundle>messages.Messages</resource-bundle>
+
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.timan1802.fakedatainsert.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>

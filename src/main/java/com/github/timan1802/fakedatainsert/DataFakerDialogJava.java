@@ -331,7 +331,7 @@ public class DataFakerDialogJava extends DialogWrapper {
             if (sqlDialect == null) {
                 sqlDialect = SqlDialect.MYSQL; // 기본값
                 Messages.showWarningDialog(
-                        String.format("Unsupported database type '%s'. It is created in MYSQL format.", dbms.getDisplayName()),
+                        MessagesBundle.message("unsupported.database.type", dbms.getDisplayName()),
                         "Database Type Warning"
                 );
             }
@@ -349,7 +349,7 @@ public class DataFakerDialogJava extends DialogWrapper {
                 count = Integer.parseInt(countField.getText().trim());
             } catch (NumberFormatException e) {
                 //생성할 데이터 개수는 숫자여야 합니다.
-                Messages.showErrorDialog("Must be numbers.", "INPUT ERROR");
+                Messages.showErrorDialog(MessagesBundle.message("must.be.number"), "INPUT ERROR");
                 return;
             }
 
@@ -361,7 +361,7 @@ public class DataFakerDialogJava extends DialogWrapper {
 
         } catch (Exception e) {
             //SQL 생성 중 오류 발생
-            sqlTextArea.setText("Error occurs during SQL creation: " + e.getMessage());
+            sqlTextArea.setText(MessagesBundle.message("error.occurs.during.sql.creation", e.getMessage()));
         }
     }
 
@@ -533,6 +533,7 @@ public class DataFakerDialogJava extends DialogWrapper {
             // 컬럼 너비 설정
             column.setPreferredWidth(200);  // 두 콤보박스가 들어갈 수 있는 충분한 너비
         }
+        setDefaultLocaleByUserLanguage();
     }
 
     
@@ -605,9 +606,10 @@ public class DataFakerDialogJava extends DialogWrapper {
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
                 
                 // 복사 성공 메시지 표시
-                Messages.showInfoMessage("SQL이 클립보드에 복사되었습니다.", "복사 완료");
+                Messages.showInfoMessage(MessagesBundle.message("sql.copied.to.clipboard")
+                        , MessagesBundle.message("sql.copied.completion"));
             } catch (Exception ex) {
-                Messages.showErrorDialog("클립보드에 복사하는 중 오류가 발생했습니다: " + ex.getMessage(), "복사 오류");
+                Messages.showErrorDialog(MessagesBundle.message("sql.copied.error.message", ex.getMessage()), MessagesBundle.message("sql.copied.error"));
             }
         });
         
@@ -617,5 +619,18 @@ public class DataFakerDialogJava extends DialogWrapper {
         }
         
         return southPanel;
+    }
+    
+    private void setDefaultLocaleByUserLanguage() {
+        // IntelliJ IDEA의 현재 UI 언어 설정 가져오기
+        String currentLanguage = com.intellij.DynamicBundle.getLocale().getLanguage();
+        
+        // 한국어인 경우 ('ko')
+        if ("ko".equals(currentLanguage)) {
+            countryComboBox.setSelectedItem(FakerDataLocaleType.KO_KR);
+        } else {
+            // 그 외의 경우 영어로 설정
+            countryComboBox.setSelectedItem(FakerDataLocaleType.EN_US);
+        }
     }
 }

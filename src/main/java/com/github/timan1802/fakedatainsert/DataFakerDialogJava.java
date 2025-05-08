@@ -290,7 +290,7 @@ public class DataFakerDialogJava extends DialogWrapper {
             // 각 컬럼에 대해
             for (int col = 0; col < table.getColumnCount(); col++) {
                 // 체크되지 않은 컬럼은 건너뛰기
-                if (!checkBoxHeaders[col].isColumnChecked()) {
+                if (checkBoxHeaders[col].isNotColumnChecked()) {
                     continue;
                 }
 
@@ -448,7 +448,7 @@ public class DataFakerDialogJava extends DialogWrapper {
                     Rectangle headerRect = table.getTableHeader().getHeaderRect(col);
                     // 체크박스 영역 클릭 확인 (왼쪽 20픽셀 정도)
                     if (e.getX() - headerRect.x < 20) {
-                        checkBoxHeaders[col].setChecked(!checkBoxHeaders[col].isColumnChecked());
+                        checkBoxHeaders[col].setChecked(checkBoxHeaders[col].isNotColumnChecked());
                     }
                 }
             }
@@ -555,6 +555,10 @@ public class DataFakerDialogJava extends DialogWrapper {
 
         public boolean isColumnChecked() {
             return isChecked;
+        }
+
+        public boolean isNotColumnChecked() {
+            return !isChecked;
         }
 
         public void setChecked(boolean checked) {

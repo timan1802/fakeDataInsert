@@ -275,7 +275,8 @@ public class DataFakerDialogJava extends DialogWrapper {
         FakerDataLocaleType selectedLocale = (FakerDataLocaleType) countryComboBox.getSelectedItem();
         if (selectedLocale != null) {
             // 새로운 Faker 인스턴스 생성
-            faker = new Faker(Locale.forLanguageTag(selectedLocale.getCode()));
+//            faker = new Faker(Locale.forLanguageTag(selectedLocale.getCode())); //<< 이거 안됨.
+            faker = new Faker(new Locale(selectedLocale.getCode()));
 
             // 테이블이 있고 모델이 있는 경우에만 업데이트
             if (table.getModel() != null) {

@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.github.timan1802.fakedatainsert.constants.DataFakerConst.METHOD_CUSTOM_BIRTHDAY;
+import static com.github.timan1802.fakedatainsert.constants.DataFakerConst.METHOD_CUSTOM_DATE_FOR_DB;
 
 public class FakerUtils {
 
@@ -62,7 +62,7 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
                      .collect(Collectors.toList());
 
         if("date".equals(providerName)) {
-            methodList.add(METHOD_CUSTOM_BIRTHDAY);
+            methodList.add(METHOD_CUSTOM_DATE_FOR_DB);
         }
 
         return methodList;
@@ -81,7 +81,7 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
             if("fullDomain".equals(methodName)) {
                 return faker.domain().fullDomain("my-domain");
             }
-            if(METHOD_CUSTOM_BIRTHDAY.equals(methodName)) {
+            if(METHOD_CUSTOM_DATE_FOR_DB.equals(methodName)) {
                 return faker.date().birthday(1, 30, "yyyy-MM-dd HH:mm:ss");
             }
 

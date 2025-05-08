@@ -9,6 +9,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+import static com.github.timan1802.fakedatainsert.constants.DataFakerConst.METHOD_CUSTOM_DATE_FOR_DB;
+
 /**
  * Faker 데이터 타입과 서브타입을 선택할 수 있는 패널
  * 테이블의 각 컬럼에 대한 데이터 생성 설정을 담당
@@ -23,9 +25,7 @@ public class DataTypePanel extends JPanel {
     private JComboBox<String> typeBox;     // 메인 데이터 타입 선택
     private JComboBox<String> subTypeBox;  // 서브 타입 선택
     private Faker             faker;                         // 데이터 생성기
-    
-    // 상수: 생년월일 기본 메서드 이름
-    private static final String METHOD_CUSTOM_BIRTHDAY = "birthday";
+
 
     /**
      * DataTypePanel 생성자
@@ -125,7 +125,7 @@ public class DataTypePanel extends JPanel {
             // 날짜/시간 컬럼 처리
             else if ((columnName.equals("created_at") || columnName.equals("updated_at")) && 
                      (dataType.contains("timestamp") || dataType.contains("datetime"))) {
-                setTypeAndSubType("date", METHOD_CUSTOM_BIRTHDAY);
+                setTypeAndSubType("date", METHOD_CUSTOM_DATE_FOR_DB);
             }
         }
     }

@@ -87,17 +87,10 @@ public class DataFakerDialogJava extends DialogWrapper {
 
         mainPanel.add(createTopPanel(), BorderLayout.NORTH);
         mainPanel.add(createSplitPane(), BorderLayout.CENTER);
-        mainPanel.add(createButtonPanel(), BorderLayout.SOUTH);
 
         return mainPanel;
     }
 
-    private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.add(new JButton("Copy SQL to Clipboard"));
-        buttonPanel.add(new JButton("DB Insert Execute"));
-        return buttonPanel;
-    }
 
     /**
      * 상단 패널을 생성합니다. 데이터 생성 개수와 국가 선택 컴포넌트를 포함합니다.

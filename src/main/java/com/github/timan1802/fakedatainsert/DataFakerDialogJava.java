@@ -118,6 +118,38 @@ public class DataFakerDialogJava extends DialogWrapper {
     private void addCountComponents(JPanel panel, GridBagConstraints gbc) {
         JLabel countLabel = new JLabel("생성할 데이터 개수");
         countField = new JBTextField(String.valueOf(DEFAULT_ROW_COUNT), 10);
+        
+        // 실시간 업데이트를 위한 문서 리스너 추가
+        countField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void updateSqlIfValid() {
+                try {
+                    String text = countField.getText().trim();
+                    if (!text.isEmpty()) {
+                        int count = Integer.parseInt(text);
+                        if (count > 0) {
+                            updateSql();
+                        }
+                    }
+                } catch (NumberFormatException ignored) {
+                    // 유효하지 않은 입력은 무시
+                }
+            }
+
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                updateSqlIfValid();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                updateSqlIfValid();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                updateSqlIfValid();
+            }
+        });
 
         gbc.gridx = 0;
         gbc.gridy = 0;

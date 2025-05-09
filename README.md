@@ -6,7 +6,6 @@ IntelliJ IDEA를 위한 데이터베이스 테이블 더미 데이터 생성 플
 
 - 데이터베이스 테이블에 더미 데이터를 손쉽게 생성
 - 다양한 데이터 타입 지원 (문자열, 숫자, 날짜 등)
-- 다국어 지원 (한국어, 영어)
 - 미리보기 기능으로 생성될 데이터 확인 가능
 - 직관적인 UI로 손쉬운 사용
 - 커스텀 데이터 포맷 지원
@@ -46,7 +45,6 @@ A plugin for IntelliJ IDEA that generates dummy data for database tables.
 <!-- Plugin description -->
 - Easy generation of dummy data for database tables
 - Support for various data types (strings, numbers, dates, etc.)
-- Multi-language support (Korean, English)
 - Preview feature to verify generated data
 - Intuitive UI for easy use
 - Custom data format support

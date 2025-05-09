@@ -3,6 +3,9 @@ package com.github.timan1802.fakedatainsert.utils;
 import net.datafaker.Faker;
 
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -98,7 +101,12 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
                 return faker.domain().fullDomain("my-domain");
             }
             if(METHOD_CUSTOM_DATE_FOR_DB.equals(methodName)) {
-                return faker.date().birthday(1, 30, "yyyy-MM-dd HH:mm:ss");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(METHOD_CUSTOM_DATE_FOR_DB);
+                return LocalDateTime.ofInstant(
+                        faker.timeAndDate().past(),
+                        ZoneId.systemDefault()
+                ).format(formatter);
+
             }
 
             Method providerMethod = faker.getClass().getMethod(providerName);

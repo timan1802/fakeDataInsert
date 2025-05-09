@@ -31,6 +31,9 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
+    // Datafaker
+    implementation("net.datafaker:datafaker:2.4.3")
+
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
 
@@ -47,8 +50,6 @@ dependencies {
         testFramework(TestFrameworkType.Platform)
     }
 
-    // Datafaker
-    implementation("net.datafaker:datafaker:2.4.3")
 }
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html

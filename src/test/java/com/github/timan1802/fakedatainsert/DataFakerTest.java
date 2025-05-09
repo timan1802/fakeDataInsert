@@ -10,6 +10,17 @@ import java.util.*;
 
 public class DataFakerTest extends TestCase {
 
+    public void testFaker_locale() {
+        for (FakerDataLocaleType localeType : FakerDataLocaleType.values()) {
+            Faker faker = new Faker(Locale.forLanguageTag(localeType.getCode()));
+            String fullName = faker.name().fullName();
+
+            System.out.println(localeType.getCode() + ": " + fullName);
+            assertNotNull(fullName);
+
+        }
+    }
+
     public void testFaker() {
         Faker faker = new Faker(new Locale("ko"));
         System.out.println(faker.name().fullName());

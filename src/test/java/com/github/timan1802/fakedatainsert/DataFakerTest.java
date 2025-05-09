@@ -22,14 +22,14 @@ public class DataFakerTest extends TestCase {
     }
 
     public void testFaker() {
-        Faker faker = new Faker(new Locale("ko"));
+        Faker faker = new Faker(Locale.forLanguageTag("ko"));
         System.out.println(faker.name().fullName());
 
         Cat catFaker = faker.getProvider("Cat");
         System.out.printf("cat :" + catFaker.name());
 
 
-        Faker faker2 = new Faker(new Locale("en"));
+        Faker faker2 = new Faker(Locale.forLanguageTag("en"));
         List<Faker> fakers = Arrays.asList(faker, faker2);
 
         for (int i = 0; i < 10; i++) {

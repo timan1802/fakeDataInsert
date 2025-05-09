@@ -4,7 +4,7 @@
     <name>fakeDataInsert</name>
     <vendor>timan1802</vendor>
 
-    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
     <depends optional="true" config-file="database.xml">com.intellij.database</depends>
 
     <resource-bundle>messages.Messages</resource-bundle>

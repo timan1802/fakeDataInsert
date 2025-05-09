@@ -4,29 +4,12 @@ IntelliJ IDEA를 위한 데이터베이스 테이블 더미 데이터 생성 플
 
 ## 기능
 
-<!-- Plugin description -->
 - 데이터베이스 테이블에 더미 데이터를 손쉽게 생성
 - 다양한 데이터 타입 지원 (문자열, 숫자, 날짜 등)
 - 다국어 지원 (한국어, 영어)
 - 미리보기 기능으로 생성될 데이터 확인 가능
 - 직관적인 UI로 손쉬운 사용
 - 커스텀 데이터 포맷 지원
-<!-- Plugin description end -->
-
-## 설치 방법
-
-### IntelliJ IDEA 마켓플레이스를 통한 설치
-
-1. IntelliJ IDEA에서 `설정(Settings)` > `플러그인(Plugins)` 메뉴로 이동
-2. 마켓플레이스 탭에서 "Fake Data Insert" 검색
-3. `설치(Install)` 버튼 클릭
-
-### 수동 설치
-
-1. [릴리즈 페이지](https://github.com/timan1802/fakeDataInsert/releases)에서 최신 버전 다운로드
-2. IntelliJ IDEA에서 `설정(Settings)` > `플러그인(Plugins)` 메뉴로 이동
-3. ⚙️ 아이콘 클릭 후 `디스크에서 플러그인 설치(Install Plugin from Disk...)` 선택
-4. 다운로드한 파일 선택
 
 ## 사용 방법
 
@@ -47,9 +30,49 @@ IntelliJ IDEA를 위한 데이터베이스 테이블 더미 데이터 생성 플
 ![옵션](https://github.com/user-attachments/assets/dfc4d073-d1c0-4c9b-97f1-be16116837ce)
 
 
-
-
 ## 크레딧
 
 이 플러그인은 다음 라이브러리를 사용합니다:
 - [DataFaker](https://github.com/datafaker-net/datafaker) - 더미 데이터 생성 라이브러리
+
+---
+
+# Fake Data Insert Plugin
+
+A plugin for IntelliJ IDEA that generates dummy data for database tables.
+
+## Features
+
+<!-- Plugin description -->
+- Easy generation of dummy data for database tables
+- Support for various data types (strings, numbers, dates, etc.)
+- Multi-language support (Korean, English)
+- Preview feature to verify generated data
+- Intuitive UI for easy use
+- Custom data format support
+<!-- Plugin description end -->
+
+## How to Use
+
+1. Select a table in the Database tool window
+2. Right-click to open the context menu
+3. Select "Generate Fake Data" menu
+4. Configure data generation options
+- Specify number of records to generate
+- Select data type for each column
+- Customize data format
+5. Preview the data to be generated
+6. Copy generated SQL for use
+
+## Feature Screenshots
+
+![TableRightClick](https://github.com/user-attachments/assets/526c18b7-92c0-4014-95a3-8ffbb5e8246f)
+![InitialScreen](https://github.com/user-attachments/assets/c15811a1-523e-49f1-b88c-e84f28a43f01)
+![Options](https://github.com/user-attachments/assets/dfc4d073-d1c0-4c9b-97f1-be16116837ce)
+
+## Credits
+
+This plugin uses the following library:
+- [DataFaker](https://github.com/datafaker-net/datafaker) - A dummy data generation library
+
+---

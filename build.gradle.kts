@@ -1,22 +1,28 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
 plugins {
     id("java") // Java support
-    alias(libs.plugins.kotlin) // Kotlin support
+//    alias(libs.plugins.kotlin) // Kotlin support
     alias(libs.plugins.intelliJPlatform) // IntelliJ Platform Gradle Plugin
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
-    alias(libs.plugins.qodana) // Gradle Qodana Plugin
-    alias(libs.plugins.kover) // Gradle Kover Plugin
+//    alias(libs.plugins.qodana) // Gradle Qodana Plugin
+//    alias(libs.plugins.kover) // Gradle Kover Plugin
 }
 
 group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
 
 // Set the JVM language level used to build the project.
-kotlin {
-    jvmToolchain(21)
+//kotlin {
+//    jvmToolchain(21)
+//}
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 // Configure project's dependencies
@@ -101,10 +107,13 @@ intellijPlatform {
         // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = providers.gradleProperty("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
+        channels = providers.gradleProperty("pluginVersion")
+            .map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
 
     pluginVerification {
+        //datafaker에서 사용하는 snakeyaml이 JDK 1.8로 만들어져 있는 데, failureLevel을 default(COMPATIBILITY_PROBLEMS)로 하면 반드시 오류가 발생한다.
+        failureLevel.addAll(VerifyPluginTask.FailureLevel.INVALID_PLUGIN)
         ides {
             recommended()
         }
@@ -118,15 +127,15 @@ changelog {
 }
 
 // Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
-kover {
-    reports {
-        total {
-            xml {
-                onCheck = true
-            }
-        }
-    }
-}
+//kover {
+//    reports {
+//        total {
+//            xml {
+//                onCheck = true
+//            }
+//        }
+//    }
+//}
 
 tasks {
     wrapper {
@@ -159,15 +168,7 @@ intellijPlatformTesting {
     }
 }
 
-tasks.jar {
-    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
-}
-
-tasks.named("buildSearchableOptions").configure {
-    enabled = false
 }

@@ -1,16 +1,17 @@
 package com.github.timan1802.fakedatainsert;
 
 import com.github.timan1802.fakedatainsert.utils.FakerUtils;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.intellij.database.model.DasColumn;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
+import com.intellij.ide.util.PropertiesComponent;
 import net.datafaker.Faker;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
-
-import static com.github.timan1802.fakedatainsert.constants.DataFakerConst.METHOD_CUSTOM_DATE_FOR_DB;
 
 /**
  * Faker 데이터 타입과 서브타입을 선택할 수 있는 패널
@@ -110,23 +111,48 @@ public class DataTypePanel extends JPanel {
      * 컬럼 타입에 따른 Data Faker 콤보박스 기본값 설정
      */
     private void checkAndSetColumnDefaults() {
-        String columnName = table.getColumnModel().getColumn(columnIndex).getHeaderValue().toString().toLowerCase();
+        String columnName = table.getColumnModel()
+                                 .getColumn(columnIndex)
+                                 .getHeaderValue()
+                                 .toString()
+                                 .toLowerCase();
+
         DasColumn column = getColumnFromDbTable(columnName);
-        
-        if (column != null) {
-            String dataType = column.getDasType().toDataType().typeName;
-            
-            // ID 컬럼 처리
-            if (columnName.contains("id")) {
-                if (dataType.contains("int") || dataType.contains("bigint")) {
-                    setTypeAndSubType("number", "positive");
-                }
+        if (column == null) return;
+
+        // 저장된 규칙 불러오기
+        String savedRulesJson = PropertiesComponent.getInstance()
+                                                   .getValue("TABLE_MAPPING_RULES");
+        if (savedRulesJson == null) return;
+
+        List<TableMappingRule> rules = new Gson().fromJson(
+                savedRulesJson,
+                new TypeToken<List<TableMappingRule>>(){}.getType()
+        );
+
+        // 규칙 적용
+        for (TableMappingRule rule : rules) {
+            if (!rule.isEnabled()) continue;
+
+            boolean matches = false;
+            switch (rule.getMatchType()) {
+                case STARTS_WITH:
+                    matches = columnName.startsWith(rule.getText());
+                    break;
+                case ENDS_WITH:
+                    matches = columnName.endsWith(rule.getText());
+                    break;
+                case CONTAINS:
+                    matches = columnName.contains(rule.getText());
+                    break;
+                case EQUALS:
+                    matches = columnName.equals(rule.getText());
+                    break;
             }
 
-            // 날짜/시간 컬럼 처리
-            else if ((columnName.equals("created_at") || columnName.equals("updated_at")) && 
-                     (dataType.contains("timestamp") || dataType.contains("datetime"))) {
-                setTypeAndSubType("date", METHOD_CUSTOM_DATE_FOR_DB);
+            if (matches) {
+                setTypeAndSubType(rule.getProvider(), rule.getMethod());
+                break;
             }
         }
     }

@@ -28,17 +28,19 @@ public class FakerUtils {
                 //제외
                 if("drivingLicense".equals(method.getName())){
                     continue;
-                }else
-                if("duration".equals(method.getName())){
+                }else if("duration".equals(method.getName())){
                     continue;
-                }else
-                if("options".equals(method.getName())){
+
+                }else if("options".equals(method.getName())){
                     continue;
-                }else
-                if("time".equals(method.getName())){
+
+                }else if("time".equals(method.getName())){
                     continue;
-                }else
-                if("unique".equals(method.getName())){
+
+                }else if("unique".equals(method.getName())){
+                    continue;
+
+                }else if("getFaker".equals(method.getName())){
                     continue;
                 }
                 providerNames.add(method.getName());

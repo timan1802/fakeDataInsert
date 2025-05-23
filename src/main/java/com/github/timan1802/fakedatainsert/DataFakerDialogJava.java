@@ -39,7 +39,7 @@ import static net.datafaker.transformations.Field.field;
  */
 public class DataFakerDialogJava extends DialogWrapper {
     // UI 컴포넌트 크기 상수
-    private static final int DEFAULT_ROW_COUNT = 100;  // 기본 생성 행 수
+    private static final int DEFAULT_ROW_COUNT = 10;  // 기본 생성 행 수
     private static final int HEADER_HEIGHT = 30;       // 헤더 높이
     private static final int FIRST_ROW_HEIGHT = 60;    // 첫 번째 행 높이 (데이터 타입 선택 패널용)
     private static final int DATA_ROW_HEIGHT = 30;     // 데이터 행 높이

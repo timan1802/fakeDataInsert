@@ -7,5 +7,18 @@
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="database.xml">com.intellij.database</depends>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- 기존 확장점들 -->
+
+        <!-- 테이블 매핑 설정 페이지 추가 -->
+        <applicationConfigurable
+                parentId="other"
+                id="com.github.timan1802.fakedatainsert.settings.TableMappingConfigurable"
+                instance="com.github.timan1802.fakedatainsert.TableMappingConfigurable"
+                key="table.mapping.settings.title"/>
+
+    </extensions>
+
+
     <resource-bundle>messages.Messages</resource-bundle>
 </idea-plugin>

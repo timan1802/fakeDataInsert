@@ -2,6 +2,7 @@ package com.github.timan1802.fakedatainsert;
 
 import com.github.timan1802.fakedatainsert.utils.FakerUtils;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.ui.Messages;
@@ -11,6 +12,10 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +28,8 @@ public class TableMappingSettingsPanel extends JPanel {
     private final JButton addButton;
     private final Faker   faker;
 
+    // 기존 필드들...
+    
     public TableMappingSettingsPanel() {
         faker = new Faker();
         setLayout(new BorderLayout());
@@ -54,8 +61,17 @@ public class TableMappingSettingsPanel extends JPanel {
         addButton = new JButton(MessagesBundle.message("table.mapping.add.rule"));
         addButton.addActionListener(e -> addNewRow());
 
+        // 내보내기/불러오기 버튼 추가
+        JButton exportButton = new JButton(MessagesBundle.message("table.mapping.export"));
+        JButton importButton = new JButton(MessagesBundle.message("table.mapping.import"));
+        
+        exportButton.addActionListener(e -> exportSettings());
+        importButton.addActionListener(e -> importSettings());
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.add(addButton);
+        buttonPanel.add(exportButton);
+        buttonPanel.add(importButton);
 
         add(new JScrollPane(table), BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
@@ -177,6 +193,118 @@ public class TableMappingSettingsPanel extends JPanel {
                 });
             }
         }
+    }
+
+    // 설정 내보내기
+    private void exportSettings() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle(MessagesBundle.message("table.mapping.export.title"));
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".json");
+            }
+
+            @Override
+            public String getDescription() {
+                return "JSON Files (*.json)";
+            }
+        });
+
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            if (!file.getName().toLowerCase().endsWith(".json")) {
+                file = new File(file.getParentFile(), file.getName() + ".json");
+            }
+
+            try {
+                List<TableMappingRule> rules = getCurrentRules();
+                String json = new GsonBuilder().setPrettyPrinting().create().toJson(rules);
+                
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write(json);
+                }
+
+                Messages.showInfoMessage(
+                    MessagesBundle.message("table.mapping.export.success"),
+                    MessagesBundle.message("table.mapping.export.success.title")
+                );
+            } catch (IOException ex) {
+                Messages.showErrorDialog(
+                    MessagesBundle.message("table.mapping.export.error", ex.getMessage()),
+                    MessagesBundle.message("table.mapping.export.error.title")
+                );
+            }
+        }
+    }
+
+    // 설정 불러오기
+    private void importSettings() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle(MessagesBundle.message("table.mapping.import.title"));
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || f.getName().toLowerCase().endsWith(".json");
+            }
+
+            @Override
+            public String getDescription() {
+                return "JSON Files (*.json)";
+            }
+        });
+
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
+                String json = Files.readString(fileChooser.getSelectedFile().toPath());
+                List<TableMappingRule> rules = new Gson().fromJson(
+                    json,
+                    new TypeToken<List<TableMappingRule>>(){}.getType()
+                );
+
+                // 기존 데이터 삭제
+                while (model.getRowCount() > 0) {
+                    model.removeRow(0);
+                }
+
+                // 새로운 데이터 추가
+                for (TableMappingRule rule : rules) {
+                    model.addRow(new Object[]{
+                        rule.isEnabled(),
+                        rule.getText(),
+                        rule.getMatchType(),
+                        rule.getProvider(),
+                        rule.getMethod(),
+                        MessagesBundle.message("table.mapping.delete")
+                    });
+                }
+
+                Messages.showInfoMessage(
+                    MessagesBundle.message("table.mapping.import.success"),
+                    MessagesBundle.message("table.mapping.import.success.title")
+                );
+            } catch (Exception ex) {
+                Messages.showErrorDialog(
+                    MessagesBundle.message("table.mapping.import.error", ex.getMessage()),
+                    MessagesBundle.message("table.mapping.import.error.title")
+                );
+            }
+        }
+    }
+
+    // 현재 규칙 목록 가져오기
+    private List<TableMappingRule> getCurrentRules() {
+        List<TableMappingRule> rules = new ArrayList<>();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            TableMappingRule rule = new TableMappingRule();
+            rule.setEnabled((Boolean) model.getValueAt(i, 0));
+            rule.setText((String) model.getValueAt(i, 1));
+            rule.setMatchType((TableMappingRule.MatchType) model.getValueAt(i, 2));
+            rule.setProvider((String) model.getValueAt(i, 3));
+            rule.setMethod((String) model.getValueAt(i, 4));
+            rules.add(rule);
+        }
+        return rules;
     }
 
     // ButtonRenderer 클래스 추가

@@ -73,6 +73,20 @@ public class TableMappingSettingsPanel extends JPanel {
         buttonPanel.add(exportButton);
         buttonPanel.add(importButton);
 
+        JButton resetButton = new JButton(MessagesBundle.message("table.mapping.reset"));
+        resetButton.addActionListener(e -> {
+            if (Messages.showYesNoDialog(
+                    MessagesBundle.message("table.mapping.reset.confirm"),
+                    MessagesBundle.message("table.mapping.reset.title"),
+                    Messages.getQuestionIcon()) == Messages.YES) {
+                // 기본값으로 초기화
+                PropertiesComponent.getInstance().unsetValue("TABLE_MAPPING_RULES");
+                loadSettings();
+            }
+        });
+
+        buttonPanel.add(resetButton);
+
         add(new JScrollPane(table), BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
@@ -174,26 +188,36 @@ public class TableMappingSettingsPanel extends JPanel {
         // 저장된 설정 불러오기
         String savedRulesJson = PropertiesComponent.getInstance()
                 .getValue("TABLE_MAPPING_RULES");
-
-        if (savedRulesJson != null) {
-            List<TableMappingRule> rules = new Gson().fromJson(
-                    savedRulesJson,
-                    new TypeToken<List<TableMappingRule>>(){}.getType()
-            );
-
-            // 테이블에 데이터 추가
-            for (TableMappingRule rule : rules) {
-                model.addRow(new Object[]{
-                        rule.isEnabled(),
-                        rule.getText(),
-                        rule.getMatchType(),
-                        rule.getProvider(),
-                        rule.getMethod(),
-                        MessagesBundle.message("table.mapping.delete")
-                });
-            }
-        }
+        
+        List<TableMappingRule> rules;
+        
+        if (savedRulesJson == null || savedRulesJson.isEmpty()) {
+            // 저장된 설정이 없는 경우 기본값 사용
+            rules = DefaultTableMappingRules.getDefaultRules();
+            
+            // 기본값을 저장
+            String defaultJson = new Gson().toJson(rules);
+            PropertiesComponent.getInstance().setValue("TABLE_MAPPING_RULES", defaultJson);
+        } else {
+            // 저장된 설정이 있는 경우 해당 설정 사용
+            rules = new Gson().fromJson(
+                savedRulesJson,
+                new TypeToken<List<TableMappingRule>>(){}.getType()
+        );
     }
+
+    // 테이블에 데이터 추가
+    for (TableMappingRule rule : rules) {
+        model.addRow(new Object[]{
+                rule.isEnabled(),
+                rule.getText(),
+                rule.getMatchType(),
+                rule.getProvider(),
+                rule.getMethod(),
+                MessagesBundle.message("table.mapping.delete")
+        });
+    }
+}
 
     // 설정 내보내기
     private void exportSettings() {

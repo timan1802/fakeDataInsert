@@ -5,7 +5,7 @@
     <vendor>timan1802</vendor>
 
     <depends>com.intellij.modules.platform</depends>
-    <depends optional="true" config-file="database.xml">com.intellij.database</depends>
+    <depends config-file="database.xml">com.intellij.database</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- 기존 확장점들 -->

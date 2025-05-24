@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.timan1802.fakedatainsert</id>
-    <name>fakeDataInsert</name>
+    <name>FakeDataInsert</name>
     <vendor>timan1802</vendor>
 
     <depends>com.intellij.modules.platform</depends>

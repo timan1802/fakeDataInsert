@@ -2,6 +2,10 @@
 
 # fakeDataInsert Changelog
 
-## [Unreleased]
+## [1.1.1] - 2025-05-24
+
 ### Added
-- Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
+- 테이블명에 따른 최초 provider와 메소드를 매핑하는 설정 기능 추가
+
+### Changed
+- database depends 필수로 수정

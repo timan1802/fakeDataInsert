@@ -8,7 +8,11 @@
     <depends config-file="database.xml">com.intellij.database</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- 기존 확장점들 -->
+        <notification.group
+                id="Database Fake Data"
+                displayType="BALLOON"
+                bundle="messages.MyBundle"
+                key="notification.group.name"/>
 
         <!-- 테이블 매핑 설정 페이지 추가 -->
         <applicationConfigurable

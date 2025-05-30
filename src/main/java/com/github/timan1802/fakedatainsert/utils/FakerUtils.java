@@ -1,6 +1,7 @@
 package com.github.timan1802.fakedatainsert.utils;
 
 import net.datafaker.Faker;
+import net.datafaker.providers.base.Text;
 
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.github.timan1802.fakedatainsert.constants.DataFakerConst.METHOD_CUSTOM_DATE_FOR_DB;
+import static com.github.timan1802.fakedatainsert.constants.DataFakerConst.METHOD_CUSTOM_YN;
 
 public class FakerUtils {
 
@@ -86,6 +88,10 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
             methodList.add(METHOD_CUSTOM_DATE_FOR_DB);
         }
 
+        if("text".equals(providerName)) {
+            methodList.add(METHOD_CUSTOM_YN);
+        }
+
         return methodList;
 
     } catch (Exception e) {
@@ -102,12 +108,22 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
             if("fullDomain".equals(methodName)) {
                 return faker.domain().fullDomain("my-domain");
             }
+
             if(METHOD_CUSTOM_DATE_FOR_DB.equals(methodName)) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern(METHOD_CUSTOM_DATE_FOR_DB);
                 return LocalDateTime.ofInstant(
                         faker.timeAndDate().past(),
                         ZoneId.systemDefault()
                 ).format(formatter);
+
+            }
+
+            // Y or N
+            if(METHOD_CUSTOM_YN.equals(methodName)) {
+                return faker.text().text(Text.TextSymbolsBuilder.builder()
+                                                 .len(1)
+                                                 .with("YN", 1)
+                                                 .build());
 
             }
 

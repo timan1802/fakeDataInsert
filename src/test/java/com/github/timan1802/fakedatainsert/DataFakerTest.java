@@ -4,11 +4,24 @@ import junit.framework.TestCase;
 import net.datafaker.Faker;
 import net.datafaker.providers.base.Cat;
 import net.datafaker.providers.base.Options;
+import net.datafaker.providers.base.Text;
 
 import java.lang.reflect.Method;
 import java.util.*;
 
 public class DataFakerTest extends TestCase {
+
+    public void test_custom_yn(){
+        Faker faker = new Faker();
+        for (int i = 0; i < 10; i++) {
+            String YN = faker.text().text(Text.TextSymbolsBuilder.builder()
+                                                  .len(1)
+                                                  .with("YN", 1)
+                                                  .build());
+            System.out.println("YN : "+ YN);
+            assertTrue(YN.equals("Y") || YN.equals("N"));
+        }
+    }
 
     public void testFaker_locale() {
         for (FakerDataLocaleType localeType : FakerDataLocaleType.values()) {

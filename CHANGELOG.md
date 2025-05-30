@@ -4,6 +4,16 @@
 
 ## [Unreleased]
 
+
+## [1.1.2] - 2025-05-30
+
+### Added
+
+- Icon 추가
+- Database Tools Plugin 설치 확인 추가
+- text 프로바이더에 Y/N 메소드 추가.
+
+
 ## [1.1.1] - 2025-05-24
 
 ### Added

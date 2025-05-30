@@ -9,10 +9,10 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <notification.group
-                id="Database Fake Data"
+                id="com.github.timan1802.fakedatainsert.NotificationGroup"
                 displayType="BALLOON"
                 bundle="messages.MyBundle"
-                key="notification.group.name"/>
+                key="com.github.timan1802.fakedatainsert.NotificationGroup"/>
 
         <!-- 테이블 매핑 설정 페이지 추가 -->
         <applicationConfigurable

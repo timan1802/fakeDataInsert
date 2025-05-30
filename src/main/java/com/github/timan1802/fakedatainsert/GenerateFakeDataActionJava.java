@@ -1,5 +1,6 @@
 package com.github.timan1802.fakedatainsert;
 
+import com.github.timan1802.fakedatainsert.utils.PluginExistsUtils;
 import com.intellij.database.psi.DbTable;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -31,16 +32,28 @@ public class GenerateFakeDataActionJava extends AnAction implements DumbAware {
 
     /**
      * XXX : 몇몇 기기에서 메뉴가 나타나지 않는다. 원인 불명.
+     * 한명은 Datagrip을 설치후에 정상동작..
+     *
      * 액션의 가시성과 활성화 상태를 업데이트
      * @param e 액션 이벤트 객체
      */
-/*    @Override
+    @Override
     public void update( AnActionEvent e) {
         Object psiElement = e.getData(CommonDataKeys.PSI_ELEMENT);
+        if (psiElement == null) {
+            logger.warn("PSI Element is null");
+            return;
+        }
         boolean isVisible = psiElement instanceof DbTable;
-        boolean existsDbTools = PluginExistsUtils.existsDbTools();
-        if (!existsDbTools) {
+
+        //Database modul 설치 확인.
+        if (!PluginExistsUtils.existsDbTools()) {
             logger.warn("Database Tools plugin is not installed");
+            Notifications.Bus.notify(new Notification(
+                    "com.github.timan1802.fakedatainsert.NotificationGroup",
+                    MessagesBundle.message("error.database.tools.not.install"),
+                    NotificationType.ERROR
+            ), e.getProject());
             isVisible = false;
         }
 
@@ -53,7 +66,7 @@ public class GenerateFakeDataActionJava extends AnAction implements DumbAware {
 
         e.getPresentation().setVisible(isVisible);
         e.getPresentation().setEnabled(isVisible);
-    }*/
+    }
 
     /**
      * 실제 액션이 수행될 때 호출되는 메서드
@@ -63,14 +76,19 @@ public class GenerateFakeDataActionJava extends AnAction implements DumbAware {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         Object        psiElement = e.getData(CommonDataKeys.PSI_ELEMENT);
+        if(psiElement == null){
+            logger.info("psiElement is null");
+            return;
+        }
 
         if (psiElement instanceof DbTable) {
             DataFakerDialogJava dialog = new DataFakerDialogJava((DbTable) psiElement);
             dialog.show();
         }else {
+            logger.info(psiElement.getClass().getName() + " is not DbTable instance");
             //오류 Notifier
             Notifications.Bus.notify(new Notification(
-                    "Database Fake Data",
+                    "com.github.timan1802.fakedatainsert.NotificationGroup",
                     MessagesBundle.message("error.wrong.right.click"),
                     NotificationType.WARNING
             ), e.getProject());

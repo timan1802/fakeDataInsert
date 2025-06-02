@@ -58,6 +58,7 @@ public class FakerUtils {
      */
 public static List<String> getProviderMethodNames(Faker faker, String providerName) {
     try {
+        //domain은 모든 메소드가 파라미터가 필요하다. fullDomain만 살리고, invoke에서 'my-domain'으로 파라미터 전달로 처리.
         if("domain".equals(providerName)) {
             return List.of("fullDomain");
         }

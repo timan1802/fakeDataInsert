@@ -49,6 +49,7 @@ public class FakerUtils {
             }
         }
 
+        Collections.sort(providerNames); // 알파벳 순서로 정렬
         return providerNames;
     }
 
@@ -92,6 +93,7 @@ public static List<String> getProviderMethodNames(Faker faker, String providerNa
             methodList.add(METHOD_CUSTOM_YN);
         }
 
+        Collections.sort(methodList); // 알파벳 순서로 정렬
         return methodList;
 
     } catch (Exception e) {

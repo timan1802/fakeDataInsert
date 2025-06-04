@@ -134,21 +134,12 @@ public class DataTypePanel extends JPanel {
         for (TableMappingRule rule : rules) {
             if (!rule.isEnabled()) continue;
 
-            boolean matches = false;
-            switch (rule.getMatchType()) {
-                case STARTS_WITH:
-                    matches = columnName.startsWith(rule.getText());
-                    break;
-                case ENDS_WITH:
-                    matches = columnName.endsWith(rule.getText());
-                    break;
-                case CONTAINS:
-                    matches = columnName.contains(rule.getText());
-                    break;
-                case EQUALS:
-                    matches = columnName.equals(rule.getText());
-                    break;
-            }
+            boolean matches = switch (rule.getMatchType()) {
+                case STARTS_WITH -> columnName.startsWith(rule.getText());
+                case ENDS_WITH -> columnName.endsWith(rule.getText());
+                case CONTAINS -> columnName.contains(rule.getText());
+                case EQUALS -> columnName.equals(rule.getText());
+            };
 
             if (matches) {
                 setTypeAndSubType(rule.getProvider(), rule.getMethod());

@@ -1,5 +1,6 @@
 package com.github.timan1802.fakedatainsert;
 
+import com.github.timan1802.fakedatainsert.constants.DataFakerConst;
 import com.github.timan1802.fakedatainsert.utils.FakerUtils;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -122,7 +123,7 @@ public class DataTypePanel extends JPanel {
 
         // 저장된 규칙 불러오기
         String savedRulesJson = PropertiesComponent.getInstance()
-                                                   .getValue("TABLE_MAPPING_RULES");
+                                                   .getValue(DataFakerConst.TABLE_MAPPING_RULES);
         if (savedRulesJson == null) return;
 
         List<TableMappingRule> rules = new Gson().fromJson(

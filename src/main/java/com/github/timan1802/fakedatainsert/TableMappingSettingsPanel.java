@@ -1,5 +1,6 @@
 package com.github.timan1802.fakedatainsert;
 
+import com.github.timan1802.fakedatainsert.constants.DataFakerConst;
 import com.github.timan1802.fakedatainsert.utils.FakerUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -80,7 +81,7 @@ public class TableMappingSettingsPanel extends JPanel {
                     MessagesBundle.message("table.mapping.reset.title"),
                     Messages.getQuestionIcon()) == Messages.YES) {
                 // 기본값으로 초기화
-                PropertiesComponent.getInstance().unsetValue("TABLE_MAPPING_RULES");
+                PropertiesComponent.getInstance().unsetValue(DataFakerConst.TABLE_MAPPING_RULES);
                 loadSettings();
             }
         });
@@ -174,7 +175,7 @@ public class TableMappingSettingsPanel extends JPanel {
 
         // JSON으로 변환하여 저장
         String json = new Gson().toJson(rules);
-        PropertiesComponent.getInstance().setValue("TABLE_MAPPING_RULES", json);
+        PropertiesComponent.getInstance().setValue(DataFakerConst.TABLE_MAPPING_RULES, json);
 
         return true;
     }
@@ -187,7 +188,7 @@ public class TableMappingSettingsPanel extends JPanel {
 
         // 저장된 설정 불러오기
         String savedRulesJson = PropertiesComponent.getInstance()
-                .getValue("TABLE_MAPPING_RULES");
+                .getValue(DataFakerConst.TABLE_MAPPING_RULES);
         
         List<TableMappingRule> rules;
         
@@ -197,7 +198,7 @@ public class TableMappingSettingsPanel extends JPanel {
             
             // 기본값을 저장
             String defaultJson = new Gson().toJson(rules);
-            PropertiesComponent.getInstance().setValue("TABLE_MAPPING_RULES", defaultJson);
+            PropertiesComponent.getInstance().setValue(DataFakerConst.TABLE_MAPPING_RULES, defaultJson);
         } else {
             // 저장된 설정이 있는 경우 해당 설정 사용
             rules = new Gson().fromJson(

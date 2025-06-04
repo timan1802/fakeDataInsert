@@ -1,5 +1,6 @@
 package com.github.timan1802.fakedatainsert;
 
+import com.github.timan1802.fakedatainsert.utils.Notifier;
 import com.github.timan1802.fakedatainsert.utils.PluginExistsUtils;
 import com.intellij.database.psi.DbTable;
 import com.intellij.notification.Notification;
@@ -10,6 +11,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,29 +42,25 @@ public class GenerateFakeDataActionJava extends AnAction implements DumbAware {
     @Override
     public void update( AnActionEvent e) {
         Object psiElement = e.getData(CommonDataKeys.PSI_ELEMENT);
+        final Project project   = e.getProject();
+
         if (psiElement == null) {
-            logger.warn("PSI Element is null");
+            Notifier.error(project, MessagesBundle.message("error.database.tools.not.install"));
+            logger.error("PSI Element is null");
             return;
         }
-        boolean isVisible = psiElement instanceof DbTable;
+
+        boolean       isVisible = psiElement instanceof DbTable;
 
         //Database modul 설치 확인.
         if (!PluginExistsUtils.existsDbTools()) {
-            logger.warn("Database Tools plugin is not installed");
-            Notifications.Bus.notify(new Notification(
-                    "com.github.timan1802.fakedatainsert.NotificationGroup",
-                    MessagesBundle.message("error.database.tools.not.install"),
-                    NotificationType.ERROR
-            ), e.getProject());
+            logger.error("Database Tools plugin is not installed");
+            Notifier.error(project, MessagesBundle.message("error.database.tools.not.install"));
             isVisible = false;
         }
 
         // 디버깅을 위한 로깅 추가
-        if (psiElement != null) {
-            logger.debug("PSI Element type: {}", psiElement.getClass().getName());
-        } else {
-            logger.warn("PSI Element is null");
-        }
+        logger.debug("PSI Element type: {}", psiElement.getClass().getName());
 
         e.getPresentation().setVisible(isVisible);
         e.getPresentation().setEnabled(isVisible);

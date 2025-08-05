@@ -19,7 +19,9 @@
                 parentId="other"
                 id="com.github.timan1802.fakedatainsert.settings.TableMappingConfigurable"
                 instance="com.github.timan1802.fakedatainsert.TableMappingConfigurable"
-                key="table.mapping.settings.title"/>
+                displayName="FakeDataInsert"
+                key="table.mapping.settings.title"
+        />
 
     </extensions>
 

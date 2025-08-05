@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [1.1.3] - 2025-08-05
+
+### Changed
+
+- Changed pluginUntilBuild to 252.* 
+- Changed Config displayName to FakeDataInsert
 
 ## [1.1.2] - 2025-05-30
 
@@ -12,7 +18,6 @@
 - Icon 추가
 - Database Tools Plugin 설치 확인 추가
 - text 프로바이더에 Y/N 메소드 추가.
-
 
 ## [1.1.1] - 2025-05-24
 
@@ -24,5 +29,7 @@
 
 - database depends 필수로 수정
 
-[Unreleased]: https://github.com/timan1802/fakeDataInsert/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/timan1802/fakeDataInsert/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/timan1802/fakeDataInsert/compare/v1.1.2...v1.1.3
+[1.1.2]: https://github.com/timan1802/fakeDataInsert/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/timan1802/fakeDataInsert/commits/v1.1.1
